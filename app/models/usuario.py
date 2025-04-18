@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import relationship
 from database.base import Base
 
@@ -15,4 +15,5 @@ class Usuario(Base):
     fecha_nacimiento = Column(String, index=True)
     es_administrador = Column(Boolean, default=False)
 
-    
+    # Relación con direccion (bidireccional)
+    direccion = relationship("Direccion", back_populates="usuario")
