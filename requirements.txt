@@ -1,4 +1,4 @@
 
-
-pip install passlib
-pip install python-jose
+passlib
+python-jose
+bcrypt
