@@ -19,3 +19,4 @@ def create_user_by_admin(db: Session, user: usuario_schema.UsuarioCreateByAdmin)
     db.commit()
     db.refresh(db_user)
     return db_user
+

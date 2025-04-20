@@ -2,3 +2,4 @@
 passlib
 python-jose
 bcrypt
+pip install pydantic[email]
