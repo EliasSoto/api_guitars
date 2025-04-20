@@ -1,64 +1,45 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 
-# Schema Base - Propiedades comunes para el usuario
+# Base común para todos los usuarios
 class UsuarioBase(BaseModel):
     rut: str
     nombres: str
     apellidos: str
     correo: EmailStr
-    telefono: str = None
-    fecha_nacimiento: str = None
-    es_administrador: bool = False
-    
-### Schemas para usuario ###
-# Schema para crear un nuevo usuario
-class UsuarioCreate(UsuarioBase):
-    password: str  # Hashear más adelante
+    telefono: str
+    fecha_nacimiento: str
 
-# Schema para leer un usuario existente
+
+# Registro normal de usuario (sin permisos de admin)
+class UsuarioCreate(UsuarioBase):
+    password: str
+
+# Actualización de datos por el usuario (sin cambiar su rol ni ID)
+class UsuarioUpdate(UsuarioBase):
+    telefono: Optional[str] = None
+    fecha_nacimiento: Optional[str] = None
+    nombres: Optional[str] = None
+    apellidos: Optional[str] = None
+
+# Respuesta al frontend (no incluye contraseña)
 class UsuarioRead(UsuarioBase):
     id: int
-    rut: str
-    nombres: str
-    apellidos: str
-    correo: EmailStr
-    telefono: str = None
-    fecha_nacimiento: str = None
-
-    class Config:
-        orm_mode = True
-        
-# Schema para actualizar un usuario existente
-class UsuarioUpdate(BaseModel):
-    nombres: Optional[str]
-    apellidos: Optional[str]
-    telefono: Optional[str]
-    password: Optional[str]
-        
-### Schemas para administrador ###
-# Schema para crear un nuevo usuario por parte de un administrador
-class UsuarioAdminCreate(UsuarioBase):
-    password: str  # Hashear más adelante
-    es_administrador: bool
-    
-# Schema para leer un usuario existente
-class UsuarioAdminRead(UsuarioBase):
-    id: int
-    rut: str
-    nombres: str
-    apellidos: str
-    correo: EmailStr
-    telefono: str = None
-    fecha_nacimiento: str = None
     es_administrador: bool
 
     class Config:
         orm_mode = True
-        
-# Schema para actualizar un usuario existente
-class UsuarioUpdate(BaseModel):
-    nombres: Optional[str]
-    apellidos: Optional[str]
-    telefono: Optional[str]
-    password: Optional[str]
+
+
+# Creación de usuario por parte del admin (con permiso para asignar rol)
+class UsuarioCreateByAdmin(UsuarioBase):
+    password: str
+    es_administrador: bool = False
+
+
+# Actualización por parte del admin (puede modificar todo)
+class UsuarioUpdateByAdmin(UsuarioUpdate):
+    es_administrador: Optional[bool] = None
+
+
+
