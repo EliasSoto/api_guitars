@@ -12,8 +12,8 @@ Base.metadata.create_all(bind=engine)
 
 # Crear la aplicación FastAPI
 app = FastAPI(
-    title="CRUD API",
-    description="Esta API permite crear, leer, actualizar y eliminar usuarios."
+    title="API PROYECTO GUITARRAS",
+    description="Esta API permite hacer CRUD por el momento"
 )
 
 app.include_router(login.router)

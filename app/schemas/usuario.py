@@ -3,7 +3,6 @@ from typing import Optional
 
 # Base común para todos los usuarios
 class UsuarioBase(BaseModel):
-    rut: str
     nombres: str
     apellidos: str
     correo: EmailStr
@@ -13,7 +12,8 @@ class UsuarioBase(BaseModel):
 
 # Registro normal de usuario (sin permisos de admin)
 class UsuarioCreate(UsuarioBase):
-    password: str
+    rut: str
+    hashed_password: str
 
 # Actualización de datos por el usuario (sin cambiar su rol ni ID)
 class UsuarioUpdate(UsuarioBase):
@@ -25,6 +25,7 @@ class UsuarioUpdate(UsuarioBase):
 # Respuesta al frontend (no incluye contraseña)
 class UsuarioRead(UsuarioBase):
     id: int
+    rut: str
     es_administrador: bool
 
     class Config:
@@ -33,7 +34,8 @@ class UsuarioRead(UsuarioBase):
 
 # Creación de usuario por parte del admin (con permiso para asignar rol)
 class UsuarioCreateByAdmin(UsuarioBase):
-    password: str
+    rut: str
+    hashed_password: str
     es_administrador: bool = False
 
 

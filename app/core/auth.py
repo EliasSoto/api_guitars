@@ -26,7 +26,6 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})  # Agregar la fecha de expiración al token
-    print(f"Token generado: {to_encode}")  # Depuración
     return jwt.encode(to_encode, SECRET_KEY_TOKEN, algorithm=ALGORITHM)
 
 # Verificar el token JWT y extraer el payload (username y role)
@@ -50,10 +49,10 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 # Función para autenticar al usuario
-def authenticate_user(db, username: str, password: str):
-    user = user_repo.get_user_by_username(db, username=username)
+def authenticate_user(db, nombres: str, hashed_password: str):
+    user = user_repo.get_user_by_nombres(db, nombres=nombres)
     if not user:
         return None
-    if not verify_password(password, user.hashed_password):
+    if not verify_password(hashed_password, user.hashed_password):
         return None
     return user
