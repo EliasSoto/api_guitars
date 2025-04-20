@@ -2,7 +2,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 import os
-from dotenv import load_dotenv
 
 URL_DATABASE = os.getenv("URL_DATABASE")
 # Crear el motor de conexión

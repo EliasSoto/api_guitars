@@ -10,7 +10,7 @@ def create_user_by_admin(db: Session, user: usuario_schema.UsuarioCreateByAdmin)
         nombres=user.nombres,
         apellidos=user.apellidos,
         correo=user.correo,
-        password=hashed_password,  # Asegúrate de hashear la contraseña antes de guardarla
+        hashed_password=hashed_password,  # Nueva contraseña hasheada
         telefono=user.telefono,
         fecha_nacimiento=user.fecha_nacimiento,
         es_administrador=user.es_administrador
@@ -19,3 +19,24 @@ def create_user_by_admin(db: Session, user: usuario_schema.UsuarioCreateByAdmin)
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
+def create_user(db: Session, user: usuario_schema.UsuarioCreate):
+    hashed_password = hash_password(user.password)  # Hasheamos la contraseña antes de guardarla  
+    db_user = Usuario(
+        rut=user.rut,
+        nombres=user.nombres,
+        apellidos=user.apellidos,
+        correo=user.correo,
+        hashed_password=hashed_password,  # Nueva contraseña hasheada
+        telefono=user.telefono,
+        fecha_nacimiento=user.fecha_nacimiento,
+        es_administrador=False  # El valor por defecto es False para usuarios normales
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+def get_user_by_username(db: Session, username: str):
+    return db.query(Usuario).filter(Usuario.nombres == username).first()
