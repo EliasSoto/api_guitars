@@ -78,8 +78,11 @@ def delete_user_by_admin(db: Session, user_rut: str):
 def get_user_by_nombres(db: Session, nombres: str):
     return db.query(Usuario).filter(Usuario.nombres == nombres).first()
 
-
-
+def authenticate_user(db: Session, nombres: str, password: str):
+    user = get_user_by_nombres(db, nombres)
+    if not user or not verify_password(password, user.hashed_password):
+        return None
+    return user
 
 
 #Funciones para USUARIOS NORMALES
@@ -120,7 +123,33 @@ def create_user(db: Session, user: usuario_schema.UsuarioCreate):
     return db_user
 
 
+def update_normal_user(db: Session, user_rut: str, user: usuario_schema.UsuarioUpdate, current_user_rut: str):
+    if user_rut != current_user_rut:
+        raise PermissionError("No tienes permiso para modificar los datos de otro usuario.")
 
+    db_user = db.query(Usuario).filter(Usuario.rut == user_rut).first()
+    if not db_user:
+        return None
+
+    # Actualizar campos básicos
+    if user.nombres is not None:
+        db_user.nombres = user.nombres
+    if user.apellidos is not None:
+        db_user.apellidos = user.apellidos
+    if user.correo is not None:
+        db_user.correo = user.correo
+    if user.telefono is not None:
+        db_user.telefono = user.telefono
+    if user.fecha_nacimiento is not None:
+        db_user.fecha_nacimiento = user.fecha_nacimiento
+
+    # Actualizar contraseña solo si se proporciona
+    if user.password:  # Cambiado de hashed_password a password
+        db_user.hashed_password = hash_password(user.password)
+
+    db.commit()
+    db.refresh(db_user)
+    return db_user
 
 
 #Funciones para USUARIOS NORMALES

@@ -124,6 +124,35 @@ def register_user(
     return user_repo.create_user(db=db, user=user)
 
 
+
+@router.put("/usuarios/me", tags=["Usuarios Normales"])
+def update_normal_user(
+    user_update: usuario_schema.UsuarioUpdate,  # Cambiado el nombre del parámetro
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    try:
+        updated_user = user_repo.update_normal_user(
+            db=db,
+            user_rut=current_user["rut"],
+            user=user_update,  # Usamos el objeto actualizado
+            current_user_rut=current_user["rut"]
+        )
+        return updated_user
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al actualizar el usuario: {str(e)}"
+        )
+
+
+
+
+
+
+
 #eliminar funcion ya que es solo para separar trabajo
 
 

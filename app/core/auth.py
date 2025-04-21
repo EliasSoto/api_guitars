@@ -32,15 +32,27 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 def verify_token(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY_TOKEN, algorithms=[ALGORITHM])
-        username = payload.get("sub")  # El 'sub' representa al username
-        role = payload.get("role")  # El 'role' que se incluye en el payload
-        if username is None or role is None:
-            raise JWTError()
-        # print(f"Token verificado: {username}, {role}")  # Depuración
-        return {"username": username, "role": role}  # Devuelves un diccionario con el usuario y su rol
-    except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido o expirado")
-
+        nombres = payload.get("sub")
+        user_id = payload.get("user_id")
+        role = payload.get("role")
+        rut = payload.get("rut")
+        
+        if None in [nombres, user_id, role, rut]:
+            raise JWTError("Faltan campos requeridos en el token")
+            
+        return {
+            "id": user_id,
+            "username": nombres,
+            "role": role,
+            "rut": rut
+        }
+    except JWTError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido o expirado",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    
 # Funciones para manejo de contraseñas
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)

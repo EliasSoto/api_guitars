@@ -19,11 +19,21 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.correo, "role": "admin" if user.es_administrador else "user"},
+        data={
+            "sub": user.nombres,  # Cambiado de correo a nombres
+            "user_id": user.id,   # Añadido ID
+            "role": "admin" if user.es_administrador else "user",
+            "rut": user.rut      # Añadido RUT para referencia
+        },
         expires_delta=access_token_expires
     )
     
     return {
         "access_token": access_token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "user_info": {  # Datos adicionales para el frontend
+            "id": user.id,
+            "nombres": user.nombres,
+            "rut": user.rut
+        }
     }

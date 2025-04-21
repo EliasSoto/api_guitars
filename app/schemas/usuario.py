@@ -21,6 +21,7 @@ class UsuarioUpdate(UsuarioBase):
     fecha_nacimiento: Optional[str] = None
     nombres: Optional[str] = None
     apellidos: Optional[str] = None
+    password: Optional[str] = None  # Contraseña opcional para actualizar
 
 # Respuesta al frontend (no incluye contraseña)
 class UsuarioRead(UsuarioBase):
