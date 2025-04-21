@@ -5,7 +5,7 @@ from core.utils import hash_password, verify_password
 
 #Funciones que se ocupan para el crud del admin
 def create_user_by_admin(db: Session, user: usuario_schema.UsuarioCreateByAdmin):
-    hashed_password = hash_password(user.password)  # Hasheamos la contraseña antes de guardarla  
+    hashed_password = hash_password(user.hashed_password)  # Hasheamos la contraseña antes de guardarla  
     db_user = Usuario(
         rut=user.rut,
         nombres=user.nombres,
