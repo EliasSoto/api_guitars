@@ -4,11 +4,15 @@ from schemas import usuario as usuario_schema
 from repositories import user_repo
 from database.session import get_db
 from core.auth import verify_token
-from typing import List
+from typing import List, Optional
+from fastapi.security import OAuth2PasswordBearer
+import logging
 from schemas.usuario import UsuarioRead, UsuarioUpdateByAdmin
+from models.usuario import Usuario
 
 
 router = APIRouter()
+
 
 #Endpoint para la raíz de la API oculto (false)
 @router.get("/", tags=["Inicio"], include_in_schema=False)
@@ -115,14 +119,21 @@ def delete_user(
 
 
 #ENDPOINTS DE USUARIOS NORMALES
-
-@router.post("/usuarios", response_model=usuario_schema.UsuarioRead, tags=["Usuarios Normales"])
+#ENDPOINT PUBLICO
+# Endpoint para resgistrarse como usuario normal
+@router.post("/usuarios", tags=["Usuarios Normales"], response_model=usuario_schema.UsuarioRead)
 def register_user(
     user: usuario_schema.UsuarioCreate,
     db: Session = Depends(get_db)
 ):
-    return user_repo.create_user(db=db, user=user)
-
+    try:
+        new_user = user_repo.create_user(db=db, user=user)
+        return new_user
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al crear el usuario: {str(e)}"
+        )
 
 
 @router.put("/usuarios/me", tags=["Usuarios Normales"])

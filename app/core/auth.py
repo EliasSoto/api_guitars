@@ -6,6 +6,8 @@ from fastapi import Depends, HTTPException, status
 import os
 from dotenv import load_dotenv
 from repositories import user_repo
+from models.usuario import Usuario  # Importar el modelo User desde el módulo correspondiente
+from pydantic import BaseModel  # Importar BaseModel para definir TokenData
 
 # Cargar variables de entorno
 load_dotenv()

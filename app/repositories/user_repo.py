@@ -1,8 +1,11 @@
 from sqlalchemy.orm import Session
 from models.usuario import Usuario
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
 from schemas import usuario as usuario_schema
 from core.utils import hash_password, verify_password
+from typing import Optional
+from core.auth import verify_token
+
 
 #Funciones que se ocupan para el crud del admin
 def create_user_by_admin(db: Session, user: usuario_schema.UsuarioCreateByAdmin):
@@ -85,9 +88,9 @@ def authenticate_user(db: Session, nombres: str, password: str):
     return user
 
 
-#Funciones para USUARIOS NORMALES
+#funcion para registrarse y que ademas no puedas si estas registrado en la api
 def create_user(db: Session, user: usuario_schema.UsuarioCreate):
-    # Validar si ya existe un usuario con el mismo correo o rut
+    # Verificamos si el correo o el RUT ya están registrados
     errores = []
 
     if db.query(Usuario).filter(Usuario.correo == user.correo).first():
@@ -101,22 +104,17 @@ def create_user(db: Session, user: usuario_schema.UsuarioCreate):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=errores # Lista de errores
         )
-
-    # Hasheamos la contraseña antes de guardarla
-    hashed_password = hash_password(user.hashed_password)
-
-    # Creamos el nuevo usuario como usuario normal
+        
+    hashed_password = hash_password(user.password)  # Hasheamos la contraseña antes de guardarla  
     db_user = Usuario(
         rut=user.rut,
         nombres=user.nombres,
         apellidos=user.apellidos,
         correo=user.correo,
-        hashed_password=hashed_password,
+        hashed_password=hashed_password,  # Nueva contraseña hasheada
         telefono=user.telefono,
-        fecha_nacimiento=user.fecha_nacimiento,
-        es_administrador=False  # Forzado desde backend
+        fecha_nacimiento=user.fecha_nacimiento
     )
-
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
