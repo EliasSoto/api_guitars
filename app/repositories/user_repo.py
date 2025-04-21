@@ -1,11 +1,27 @@
 from sqlalchemy.orm import Session
 from models.usuario import Usuario
+from fastapi import HTTPException, status
 from schemas import usuario as usuario_schema
 from core.utils import hash_password, verify_password
 
 #Funciones que se ocupan para el crud del admin
 def create_user_by_admin(db: Session, user: usuario_schema.UsuarioCreateByAdmin):
-    hashed_password = hash_password(user.password)  # Hasheamos la contraseña antes de guardarla  
+    # Verificamos si el correo o el RUT ya están registrados
+    errores = []
+
+    if db.query(Usuario).filter(Usuario.correo == user.correo).first():
+        errores.append("El correo ya está registrado")
+
+    if db.query(Usuario).filter(Usuario.rut == user.rut).first():
+        errores.append("El RUT ya está registrado")
+
+    if errores:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=errores # Lista de errores
+        )
+        
+    hashed_password = hash_password(user.hashed_password)  # Hasheamos la contraseña antes de guardarla  
     db_user = Usuario(
         rut=user.rut,
         nombres=user.nombres,

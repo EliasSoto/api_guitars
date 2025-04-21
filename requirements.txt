@@ -1,4 +1,6 @@
-
 passlib
+bcrypt<4.1
 python-jose
-bcrypt
+pydantic[email]<2.0.0
+python-dotenv
+python-multipart

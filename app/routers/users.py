@@ -18,7 +18,7 @@ def read_root():
 #ENDPOINTS DE USUARIOS ADMINISTRADORES
 
 # Endpoint para crear un nuevo usuario por parte de un administrador
-@router.post("/usuarios", tags=["Usuarios Admin"])
+@router.post("/usuarios", tags=["Usuarios Admin"], response_model=usuario_schema.UsuarioRead)
 def create_users(
     user: usuario_schema.UsuarioCreateByAdmin,
     db: Session = Depends(get_db),
