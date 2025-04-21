@@ -116,6 +116,13 @@ def delete_user(
 
 #ENDPOINTS DE USUARIOS NORMALES
 
+@router.post("/usuarios", response_model=usuario_schema.UsuarioRead, tags=["Usuarios Normales"])
+def register_user(
+    user: usuario_schema.UsuarioCreate,
+    db: Session = Depends(get_db)
+):
+    return user_repo.create_user(db=db, user=user)
+
 
 #eliminar funcion ya que es solo para separar trabajo
 
