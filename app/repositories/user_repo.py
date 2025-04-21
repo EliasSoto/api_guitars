@@ -84,17 +84,36 @@ def get_user_by_nombres(db: Session, nombres: str):
 
 #Funciones para USUARIOS NORMALES
 def create_user(db: Session, user: usuario_schema.UsuarioCreate):
-    hashed_password = hash_password(user.password)  # Hasheamos la contraseña antes de guardarla  
+    # Validar si ya existe un usuario con el mismo correo o rut
+    errores = []
+
+    if db.query(Usuario).filter(Usuario.correo == user.correo).first():
+        errores.append("El correo ya está registrado")
+
+    if db.query(Usuario).filter(Usuario.rut == user.rut).first():
+        errores.append("El RUT ya está registrado")
+
+    if errores:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=errores # Lista de errores
+        )
+
+    # Hasheamos la contraseña antes de guardarla
+    hashed_password = hash_password(user.hashed_password)
+
+    # Creamos el nuevo usuario como usuario normal
     db_user = Usuario(
         rut=user.rut,
         nombres=user.nombres,
         apellidos=user.apellidos,
         correo=user.correo,
-        hashed_password=hashed_password,  # Nueva contraseña hasheada
+        hashed_password=hashed_password,
         telefono=user.telefono,
         fecha_nacimiento=user.fecha_nacimiento,
-        es_administrador=False  # El valor por defecto es False para usuarios normales
+        es_administrador=False  # Forzado desde backend
     )
+
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

@@ -18,7 +18,7 @@ def read_root():
 #ENDPOINTS DE USUARIOS ADMINISTRADORES
 
 # Endpoint para crear un nuevo usuario por parte de un administrador
-@router.post("/usuarios", tags=["Usuarios Admin"], response_model=usuario_schema.UsuarioRead)
+@router.post("/admin/usuarios", tags=["Usuarios Admin"], response_model=usuario_schema.UsuarioRead)
 def create_users(
     user: usuario_schema.UsuarioCreateByAdmin,
     db: Session = Depends(get_db),
@@ -35,7 +35,7 @@ def create_users(
     return new_user
 
 #Endpoint para obtener todos los usuarios (solo admin)
-@router.get("/usuarios", tags=["Usuarios Admin"], response_model=List[UsuarioRead])
+@router.get("/admin/usuarios", tags=["Usuarios Admin"], response_model=List[UsuarioRead])
 def read_users(
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
@@ -49,7 +49,7 @@ def read_users(
     return user_repo.get_all_users(db=db)   
 
 # Endpoint para actaualizar un usuario por parte de un administrador
-@router.put("/usuarios/{user_rut}", tags=["Usuarios Admin"], response_model=usuario_schema.UsuarioRead)
+@router.put("/admin/usuarios/{user_rut}", tags=["Usuarios Admin"], response_model=usuario_schema.UsuarioRead)
 def update_user(
     user_rut: str,
     user: usuario_schema.UsuarioUpdateByAdmin,
@@ -81,7 +81,7 @@ def update_user(
     return updated_user
 
 # Endpoint para eliminar un usuario por parte de un administrador
-@router.delete("/usuarios/{user_rut}", tags=["Usuarios Admin"])
+@router.delete("/admin/usuarios/{user_rut}", tags=["Usuarios Admin"])
 def delete_user(
     user_rut: str,
     db: Session = Depends(get_db),
@@ -115,11 +115,8 @@ def delete_user(
 
 
 #ENDPOINTS DE USUARIOS NORMALES
-@router.get("/", tags=["Usuarios Normales"])
 
-#eliminar funcion ya que es solo para separar trabajo
-def read_root():
-    return {"message": "Bienvenido a la API de personalización de guitarras 🎸"}
+
 #eliminar funcion ya que es solo para separar trabajo
 
 
