@@ -52,7 +52,7 @@ def read_users(
 
     return user_repo.get_all_users(db=db)   
 
-# Endpoint para actaualizar un usuario por parte de un administrador
+# Endpoint para actualizar un usuario por parte de un administrador
 @router.put("/admin/usuarios/{user_rut}", tags=["Usuarios Admin"], response_model=usuario_schema.UsuarioRead)
 def update_user(
     user_rut: str,
@@ -120,7 +120,7 @@ def delete_user(
 
 #ENDPOINTS DE USUARIOS NORMALES
 #ENDPOINT PUBLICO
-# Endpoint para resgistrarse como usuario normal
+# Endpoint para registrarse como usuario normal
 @router.post("/usuarios", tags=["Usuarios Normales"], response_model=usuario_schema.UsuarioRead)
 def register_user(
     user: usuario_schema.UsuarioCreate,
@@ -135,7 +135,7 @@ def register_user(
             detail=f"Error al crear el usuario: {str(e)}"
         )
 
-
+# Endpoint para actualizar un usuario normal
 @router.put("/usuarios/me", tags=["Usuarios Normales"])
 def update_normal_user(
     user_update: usuario_schema.UsuarioUpdate,  # Cambiado el nombre del parámetro
@@ -157,6 +157,22 @@ def update_normal_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al actualizar el usuario: {str(e)}"
         )
+        
+# Endpoint para obtener el perfil del usuario normal
+@router.get("/usuarios/me", tags=["Usuarios Normales"], response_model=usuario_schema.UsuarioRead)
+def get_normal_user(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    db_user = user_repo.get_user_by_rut(db=db, user_rut=current_user["rut"])
+
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    return db_user
 
 
 
