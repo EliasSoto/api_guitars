@@ -28,10 +28,6 @@ def create_address(db: Session, user_id: int, direccion: DireccionCreate):
 
     return nueva_direccion
 
-# Obtener todas las direcciones de un usuario
-def get_all_addresses(db: Session, user_id: int):
-    return db.query(Direccion).filter(Direccion.id_usuario == user_id).all()
-
 # Actualizar una dirección específica por ID
 def update_address(db: Session, user_id: int, direccion_id: int, direccion_data: DireccionCreate):
     direccion = db.query(Direccion).filter(
@@ -91,3 +87,10 @@ def delete_address_by_id(db: Session, user_id: int, direccion_id: int):
     db.commit()
 
     return {"message": "Dirección eliminada correctamente"}
+
+
+#FUNCIONES COMPLEMENTARIAS
+# Obtener todas las direcciones de un usuario
+def get_all_addresses(db: Session, user_id: int):
+    return db.query(Direccion).filter(Direccion.id_usuario == user_id).all()
+#FUNCIONES COMPLEMENTARIAS

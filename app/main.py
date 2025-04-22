@@ -1,7 +1,4 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
-from models import usuario, direccion
 from database.base import Base
 from database.session import engine
 from routers import users

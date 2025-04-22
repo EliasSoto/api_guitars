@@ -3,6 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 import os
 
+# Configuración de la base de datos
 URL_DATABASE = os.getenv("URL_DATABASE")
 # Crear el motor de conexión
 engine = create_engine(URL_DATABASE)

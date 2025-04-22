@@ -1,13 +1,14 @@
 from sqlalchemy.orm import Session
 from models.usuario import Usuario
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, status
 from schemas import usuario as usuario_schema
-from core.utils import hash_password, verify_password
-from typing import Optional
-from core.auth import verify_token
+from core.utils import hash_password
 
+#Repositorio de usuarios LISTO
 
-#Funciones que se ocupan para el crud del admin
+#FUNCIONES PARA USUARIOS ADMIN
+
+#FUNCIÓN CREATE
 def create_user_by_admin(db: Session, user: usuario_schema.UsuarioCreateByAdmin):
     # Verificamos si el correo o el RUT ya están registrados
     errores = []
@@ -23,14 +24,15 @@ def create_user_by_admin(db: Session, user: usuario_schema.UsuarioCreateByAdmin)
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=errores # Lista de errores
         )
-        
-    hashed_password = hash_password(user.hashed_password)  # Hasheamos la contraseña antes de guardarla  
+    
+    # Hasheamos la contraseña antes de guardarla
+    hashed_password = hash_password(user.hashed_password)  
     db_user = Usuario(
         rut=user.rut,
         nombres=user.nombres,
         apellidos=user.apellidos,
         correo=user.correo,
-        hashed_password=hashed_password,  # Nueva contraseña hasheada
+        hashed_password=hashed_password,  
         telefono=user.telefono,
         fecha_nacimiento=user.fecha_nacimiento,
         es_administrador=user.es_administrador
@@ -40,12 +42,11 @@ def create_user_by_admin(db: Session, user: usuario_schema.UsuarioCreateByAdmin)
     db.refresh(db_user)
     return db_user
 
+#FUNCIÓN READ
 def get_all_users(db: Session):
     return db.query(Usuario).all()
 
-def get_user_by_rut(db: Session, user_rut: str):
-    return db.query(Usuario).filter(Usuario.rut == user_rut).first()
-
+#FUNCIÓN UPDATE
 def update_user_by_admin(db: Session, user_rut: str, user: usuario_schema.UsuarioUpdateByAdmin):
     db_user = db.query(Usuario).filter(Usuario.rut == user_rut).first()
     if not db_user:
@@ -64,6 +65,7 @@ def update_user_by_admin(db: Session, user_rut: str, user: usuario_schema.Usuari
     db.refresh(db_user)
     return db_user
 
+#FUNCIÓN DELETE
 def delete_user_by_admin(db: Session, user_rut: str):
     db_user = db.query(Usuario).filter(Usuario.rut == user_rut).first()
     if not db_user:
@@ -72,21 +74,10 @@ def delete_user_by_admin(db: Session, user_rut: str):
     db.delete(db_user)
     db.commit()
     return db_user
-#Funciones que se ocupan para el crud del admin
+#FUNCIONES PARA USUARIOS ADMIN
 
 
-
-#funcion que obitiene un usuario por su nombre
-#Funcion utilizada para el login (auth.py)
-def get_user_by_nombres(db: Session, nombres: str):
-    return db.query(Usuario).filter(Usuario.nombres == nombres).first()
-
-def authenticate_user(db: Session, nombres: str, password: str):
-    user = get_user_by_nombres(db, nombres)
-    if not user or not verify_password(password, user.hashed_password):
-        return None
-    return user
-
+#FUNCIONES PARA USUARIOS NORMALES
 
 #funcion para registrarse y que ademas no puedas si estas registrado en la api
 def create_user(db: Session, user: usuario_schema.UsuarioCreate):
@@ -120,7 +111,7 @@ def create_user(db: Session, user: usuario_schema.UsuarioCreate):
     db.refresh(db_user)
     return db_user
 
-
+#Actualizar usuario normal, los datos se obtienen por sesión.
 def update_normal_user(db: Session, user_rut: str, user: usuario_schema.UsuarioUpdate, current_user_rut: str):
     if user_rut != current_user_rut:
         raise PermissionError("No tienes permiso para modificar los datos de otro usuario.")
@@ -148,6 +139,15 @@ def update_normal_user(db: Session, user_rut: str, user: usuario_schema.UsuarioU
     db.commit()
     db.refresh(db_user)
     return db_user
+#FUNCIONES PARA USUARIOS NORMALES
 
 
-#Funciones para USUARIOS NORMALES
+#FUNCIONES COMPLEMENTARIAS
+#Función que obtiene un usuario por su RUT
+def get_user_by_rut(db: Session, user_rut: str):
+    return db.query(Usuario).filter(Usuario.rut == user_rut).first()
+
+#Función que obtiene un usuario por su nombre (DEBERIA SER POR CORREO)
+def get_user_by_nombres(db: Session, nombres: str):
+    return db.query(Usuario).filter(Usuario.nombres == nombres).first()
+#FUNCIONES COMPLEMENTARIAS

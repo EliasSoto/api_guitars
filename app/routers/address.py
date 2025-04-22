@@ -5,9 +5,9 @@ from repositories.address_repo import create_address, get_all_addresses, update_
 from repositories import user_repo
 from database.session import get_db
 from core.auth import verify_token
-from models.usuario import Usuario
 from fastapi.responses import JSONResponse
 
+# Necesario para la creación de la API en MAIN
 router = APIRouter()
 
 # Endpoint para crear la dirección activa del usuario autenticado

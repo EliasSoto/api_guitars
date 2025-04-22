@@ -6,17 +6,15 @@ from fastapi import Depends, HTTPException, status
 import os
 from dotenv import load_dotenv
 from repositories import user_repo
-from models.usuario import Usuario  # Importar el modelo User desde el módulo correspondiente
-from pydantic import BaseModel  # Importar BaseModel para definir TokenData
-from typing import Optional  # Importar Optional para anotaciones de tipo
+from typing import Optional  
 
 # Cargar variables de entorno
 load_dotenv()
 
 # Configuración de claves y algoritmo
 SECRET_KEY_TOKEN = os.getenv("SECRET_KEY_TOKEN")  # Clave secreta del .env
-ALGORITHM = os.getenv("ALGORITHM")  # Algoritmo de firma (por ejemplo: HS256)
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))  # Expiración del token (30 mins por defecto)
+ALGORITHM = os.getenv("ALGORITHM")  # Algoritmo de firma
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))  # Expiración del token de 30 minutos
 
 # Configuración de OAuth2 (Bearer Token)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -28,10 +26,11 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})  # Agregar la fecha de expiración al token
+    # Agregar la fecha de expiración al token
+    to_encode.update({"exp": expire})  
     return jwt.encode(to_encode, SECRET_KEY_TOKEN, algorithm=ALGORITHM)
 
-# Verificar el token JWT y extraer el payload (username y role)
+# Verificar el token JWT y extraer el payload (username, user_id, role y rut)
 def verify_token(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY_TOKEN, algorithms=[ALGORITHM])
@@ -55,7 +54,6 @@ def verify_token(token: str = Depends(oauth2_scheme)):
             detail="Token inválido o expirado",
             headers={"WWW-Authenticate": "Bearer"}
         )
-    
 # Funciones para manejo de contraseñas
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -76,6 +74,7 @@ def authenticate_user(db, nombres: str, hashed_password: str):
 # Reutilizando el esquema pero sin error automático
 oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
 
+# Verificar el token opcionalmente (sin lanzar excepción), necesario para el endpoint de registro.
 def verify_token_optional(token: Optional[str] = Depends(oauth2_scheme_optional)):
     if not token:
         return None 
