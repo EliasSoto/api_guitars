@@ -42,11 +42,11 @@ def update_address(db: Session, user_id: int, direccion_id: int, direccion_data:
             detail="Dirección no encontrada"
         )
         
-    # Validamos que no se pueda desactivar una dirección activa
+    # Validamos que no se pueda actualizar una dirección activa
     if direccion.es_activa and not direccion_data.es_activa:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No puedes desactivar una dirección que ya está activa"
+            detail="No puedes actualizar una dirección que ya está activa"
         )
 
     # Si se está activando esta dirección, desactivamos las otras
