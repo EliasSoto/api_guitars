@@ -105,7 +105,7 @@ def create_user(db: Session, user: usuario_schema.UsuarioCreate):
             detail=errores # Lista de errores
         )
         
-    hashed_password = hash_password(user.password)  # Hasheamos la contraseña antes de guardarla  
+    hashed_password = hash_password(user.hashed_password)  # Hasheamos la contraseña antes de guardarla  
     db_user = Usuario(
         rut=user.rut,
         nombres=user.nombres,
