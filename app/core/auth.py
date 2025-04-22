@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from repositories import user_repo
 from models.usuario import Usuario  # Importar el modelo User desde el módulo correspondiente
 from pydantic import BaseModel  # Importar BaseModel para definir TokenData
+from typing import Optional  # Importar Optional para anotaciones de tipo
 
 # Cargar variables de entorno
 load_dotenv()
@@ -70,3 +71,30 @@ def authenticate_user(db, nombres: str, hashed_password: str):
     if not verify_password(hashed_password, user.hashed_password):
         return None
     return user
+
+
+# Reutilizando el esquema pero sin error automático
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
+
+def verify_token_optional(token: Optional[str] = Depends(oauth2_scheme_optional)):
+    if not token:
+        return None 
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY_TOKEN, algorithms=[ALGORITHM])
+        nombres = payload.get("sub")
+        user_id = payload.get("user_id")
+        role = payload.get("role")
+        rut = payload.get("rut")
+
+        if None in [nombres, user_id, role, rut]:
+            return None  
+
+        return {
+            "id": user_id,
+            "username": nombres,
+            "role": role,
+            "rut": rut
+        }
+    except JWTError:
+        return None 

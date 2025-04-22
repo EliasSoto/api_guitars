@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from schemas import usuario as usuario_schema
 from repositories import user_repo
 from database.session import get_db
-from core.auth import verify_token
+from core.auth import verify_token, verify_token_optional
 from typing import List, Optional
 from fastapi.security import OAuth2PasswordBearer
 import logging
@@ -120,23 +120,37 @@ def delete_user(
 
 #ENDPOINTS DE USUARIOS NORMALES
 #ENDPOINT PUBLICO
-# Endpoint para registrarse como usuario normal
+
 @router.post("/usuarios", tags=["Usuarios Normales"], response_model=usuario_schema.UsuarioRead)
 def register_user(
     user: usuario_schema.UsuarioCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[dict] = Depends(verify_token_optional)  # <- solo aquí opcional
 ):
+    if current_user:
+        print("Usuario autenticado:", current_user)
+        # si quieres restringir que no se registren de nuevo
+        db_user = user_repo.get_user_by_rut(db=db, user_rut=current_user["rut"])
+        if db_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ya tienes una cuenta"
+            )
+
+    # Crear usuario nuevo
     try:
         new_user = user_repo.create_user(db=db, user=user)
         return new_user
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al crear el usuario: {str(e)}"
+            status_code=500,
+            detail=f"Error al crear usuario: {str(e)}"
         )
 
+
+
 # Endpoint para actualizar un usuario normal
-@router.put("/usuarios/me", tags=["Usuarios Normales"])
+@router.put("/usuarios/me", tags=["Usuarios Normales"], response_model=usuario_schema.UsuarioRead)
 def update_normal_user(
     user_update: usuario_schema.UsuarioUpdate,  # Cambiado el nombre del parámetro
     db: Session = Depends(get_db),
@@ -173,6 +187,9 @@ def get_normal_user(
         )
 
     return db_user
+
+
+
 
 
 
