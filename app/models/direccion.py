@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from database.base import Base
 
@@ -11,6 +11,7 @@ class Direccion(Base):
     comuna = Column(String, index=True)
     indicaciones = Column(String, nullable=True)
     tipo_domicilio = Column(String, index=True)
+    es_activa = Column(Boolean, default=False)
     id_usuario = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
 
     # Relación con usuario (bidireccional)

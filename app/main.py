@@ -5,6 +5,7 @@ from models import usuario, direccion
 from database.base import Base
 from database.session import engine
 from routers import users
+from routers import address
 from routers import login
 
 # Crear las tablas en la base de datos
@@ -18,5 +19,6 @@ app = FastAPI(
 
 app.include_router(login.router)
 app.include_router(users.router)
+app.include_router(address.router)
 
 
