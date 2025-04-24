@@ -4,7 +4,7 @@ from database.session import engine
 from routers import users
 from routers import address
 from routers import login
-
+from fastapi.middleware.cors import CORSMiddleware
 # Crear las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
 
@@ -12,6 +12,14 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="API PROYECTO GUITARRAS",
     description="Esta API permite hacer CRUD por el momento"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "https://mi-frontend.vercel.app"],  # pon la URL de tu frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(login.router)
