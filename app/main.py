@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from fastapi import FastAPI
 from database.base import Base
 from database.session import engine
@@ -5,10 +9,9 @@ from routers import users
 from routers import address
 from routers import login
 from fastapi.middleware.cors import CORSMiddleware
-import sys
-import os
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+
 
 
 # Crear las tablas en la base de datos
