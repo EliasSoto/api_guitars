@@ -5,6 +5,12 @@ from routers import users
 from routers import address
 from routers import login
 from fastapi.middleware.cors import CORSMiddleware
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+
 # Crear las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
 
