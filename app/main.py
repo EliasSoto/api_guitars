@@ -1,3 +1,5 @@
+#Importante para ejecutar el comando uvicorn app.main:app --reload 
+#Sin hacer cd
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -10,10 +12,6 @@ from routers import address
 from routers import login
 from fastapi.middleware.cors import CORSMiddleware
 
-
-
-
-
 # Crear las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
 
@@ -25,7 +23,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://mi-frontend.vercel.app"],  # pon la URL de tu frontend
+    allow_origins=["https://web-production-6b64.up.railway.app/"],  # pon la URL de tu frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -36,5 +34,3 @@ app.include_router(users.router)
 app.include_router(address.router)
 
 #cerdo por ahora
-
-
