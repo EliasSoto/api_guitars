@@ -112,6 +112,29 @@ def delete_user(
 
     return {"message": "Usuario eliminado correctamente"}
 
+# Endpoint para obtener un usuario por id
+@router.get("/admin/usuarios/{user_rut}", tags=["Usuarios Admin"], response_model=usuario_schema.UsuarioRead)
+def get_user_by_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para ver usuarios"
+        )
+
+    db_user = user_repo.get_user_by_rut(db=db, user_id=user_id)
+
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    return db_user
+
 #ENDPOINTS DE USUARIOS ADMINISTRADORES
 
 

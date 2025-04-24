@@ -147,6 +147,10 @@ def update_normal_user(db: Session, user_rut: str, user: usuario_schema.UsuarioU
 def get_user_by_rut(db: Session, user_rut: str):
     return db.query(Usuario).filter(Usuario.rut == user_rut).first()
 
+#Función que obtiene un usuario por su ID
+def get_user_by_rut(db: Session, user_id: int):
+    return db.query(Usuario).filter(Usuario.id == user_id).first()
+
 #Función que obtiene un usuario por su nombre (DEBERIA SER POR CORREO)
 def get_user_by_nombres(db: Session, nombres: str):
     return db.query(Usuario).filter(Usuario.nombres == nombres).first()
