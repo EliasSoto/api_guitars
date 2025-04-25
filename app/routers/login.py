@@ -8,7 +8,7 @@ from core.auth import authenticate_user, create_access_token, ACCESS_TOKEN_EXPIR
 router = APIRouter()
 
 #Endpoint para la autenticación de usuarios. Oculto (false)
-@router.post("/token", tags=["Autenticación"], include_in_schema=False)
+@router.post("/token", tags=["Autenticación"])
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
