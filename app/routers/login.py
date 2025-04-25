@@ -35,6 +35,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         "user_info": { 
             "id": user.id,
             "nombres": user.nombres,
-            "rut": user.rut
+            "rut": user.rut,
+            "role": "admin" if user.es_administrador else "user",
         }
     }
