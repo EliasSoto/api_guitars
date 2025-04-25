@@ -113,7 +113,7 @@ def delete_user(
     return {"message": "Usuario eliminado correctamente"}
 
 # Endpoint para obtener un usuario por id
-@router.get("/admin/usuarios/{user_rut}", tags=["Usuarios Admin"], response_model=usuario_schema.UsuarioRead)
+@router.get("/admin/usuarios/{user_id}", tags=["Usuarios Admin"], response_model=usuario_schema.UsuarioRead)
 def get_user_by_id(
     user_id: int,
     db: Session = Depends(get_db),
@@ -125,7 +125,7 @@ def get_user_by_id(
             detail="No tienes permisos para ver usuarios"
         )
 
-    db_user = user_repo.get_user_by_rut(db=db, user_id=user_id)
+    db_user = user_repo.get_user_by_id(db=db, user_id=user_id)
 
     if not db_user:
         raise HTTPException(
@@ -169,7 +169,7 @@ def register_user(
         )
 
 # Endpoint para actualizar un usuario normal logueado.
-@router.put("/usuarios/me", tags=["Usuarios Normales"], response_model=usuario_schema.UsuarioRead)
+@router.put("/usuarios", tags=["Usuarios Normales"], response_model=usuario_schema.UsuarioRead)
 def update_normal_user(
     user_update: usuario_schema.UsuarioUpdate, 
     db: Session = Depends(get_db),
@@ -192,7 +192,7 @@ def update_normal_user(
         )
         
 # Endpoint para obtener el perfil del usuario normal logueado.
-@router.get("/usuarios/me", tags=["Usuarios Normales"], response_model=usuario_schema.UsuarioRead)
+@router.get("/usuarios", tags=["Usuarios Normales"], response_model=usuario_schema.UsuarioRead)
 def get_normal_user(
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
