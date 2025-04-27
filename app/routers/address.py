@@ -17,7 +17,7 @@ def create_address(
     current_user: dict = Depends(verify_token)
 ):
     
-    # Verificamos si el usuario autenticado existe.
+    # Se verifica que el usuario autenticado exista.
     db_user = user_repo.get_user_by_id(db=db, user_id=current_user["id"]) 
     if not db_user:
         raise HTTPException(
@@ -25,7 +25,7 @@ def create_address(
             detail="Usuario no encontrado"
         )
 
-    # Intentamos crear la dirección activa
+    # Se intenta crear la dirección.
     try:
         db_address = address_repo.create_address(db, db_user.id, address)
         return db_address
@@ -59,7 +59,7 @@ def update_user_address(
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
-    # Obtenemos el usuario autenticado
+    # Se obtiene el usuario autenticado.
     db_user = user_repo.get_user_by_id(db=db, user_id=current_user["id"])
     if not db_user:
         raise HTTPException(
@@ -67,7 +67,7 @@ def update_user_address(
             detail="Usuario no encontrado"
         )
 
-    # Intentamos actualizar la dirección
+    # Se intenta actualizar la dirección.
     try:
         updated_adress = address_repo.update_address(
             db=db,
@@ -92,7 +92,7 @@ def delete_user_address(
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
-    # Obtenemos el usuario autenticado
+    # Se obtiene el usuario autenticado.
     db_user = user_repo.get_user_by_id(db=db, user_id=current_user["id"])
     if not db_user:
         raise HTTPException(
@@ -100,7 +100,7 @@ def delete_user_address(
             detail="Usuario no encontrado"
         )
 
-    # Intentamos eliminar la dirección
+    # Se intenta eliminar la dirección.
     try:
         content = address_repo.delete_address_by_id(
             db=db,

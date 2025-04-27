@@ -10,7 +10,7 @@ def create_address(db: Session, user_id: int, address: address_schema.AddressCre
     # Siempre que se crea una nueva dirección, se inactivan las anteriores.
     try:
         db.query(Address).filter(
-            Address.user_id == user_id,  # Verificar que es el mismo usuario
+            Address.user_id == user_id,
             Address.is_active == True  # Solo se desactivan las activas
         ).update({"is_active": False})
         
@@ -22,12 +22,12 @@ def create_address(db: Session, user_id: int, address: address_schema.AddressCre
             directions=address.directions,
             address_type=address.address_type,
             user_id=user_id,
-            is_active=True  # Esta será la nueva dirección activa
+            is_active=True
         )
 
         db.add(db_address)
         db.commit()
-        db.refresh(db_address)  # Refrescamos para obtener la dirección con ID
+        db.refresh(db_address)
 
         return db_address
     except Exception as e:
