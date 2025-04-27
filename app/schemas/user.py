@@ -1,5 +1,6 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator
 from typing import Optional
+from core.utils import validate_rut, validate_phone_number, validate_birth_date
 
 # Base común para todos los usuarios.
 class UserBase(BaseModel):
@@ -7,13 +8,25 @@ class UserBase(BaseModel):
     last_name: str
     email: EmailStr
     phone: str
-    birth_date: str
-
+    birth_date: str    
 
 # Registro normal de usuario. (sin permisos de admin)
 class UserCreate(UserBase):
     rut: str
     hashed_password: str
+    
+    # Validación del RUT.
+    _validate_rut = validator('rut', allow_reuse=True)(validate_rut)
+    
+    # Validación del número de teléfono.
+    @validator('phone')
+    def phone_must_be_valid(cls, v):
+        return validate_phone_number(v)
+    
+    # Validación del formato de la fecha de nacimiento y rango aceptable.
+    @validator('birth_date')
+    def birth_date_must_be_valid(cls, v):
+        return validate_birth_date(v)
 
 # Actualización de datos por el usuario. (sin cambiar su rol ni ID)
 class UserUpdate(UserBase):
@@ -22,6 +35,12 @@ class UserUpdate(UserBase):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     password: Optional[str] = None  # Contraseña opcional para actualizarla.
+    
+    # Validación del número de teléfono.
+    _validate_phone = validator('phone', allow_reuse=True)(validate_phone_number)
+    
+    # Validación del formato de la fecha de nacimiento y rango aceptable.
+    _validate_birth_date = validator('birth_date', allow_reuse=True)(validate_birth_date)
 
 # Respuesta al frontend. (no incluye contraseña)
 class UserRead(UserBase):
@@ -38,6 +57,15 @@ class UserCreateByAdmin(UserBase):
     rut: str
     hashed_password: str
     is_admin: bool = False
+    
+    # Validación del RUT.
+    _validate_rut = validator('rut', allow_reuse=True)(validate_rut)
+    
+    # Validación del número de teléfono.
+    _validate_phone = validator('phone', allow_reuse=True)(validate_phone_number)
+    
+    # Validación del formato de la fecha de nacimiento y rango aceptable.
+    _validate_birth_date = validator('birth_date', allow_reuse=True)(validate_birth_date)
 
 
 # Actualización por parte del admin (sin contraseña)
@@ -49,6 +77,15 @@ class UserUpdateByAdmin(BaseModel):
     birth_date: Optional[str] = None
     rut: Optional[str] = None
     is_admin: Optional[bool] = None  # Rol de admin opcional
+    
+    # Validación del RUT.
+    _validate_rut = validator('rut', allow_reuse=True)(validate_rut)
+    
+    # Validación del número de teléfono.
+    _validate_phone = validator('phone', allow_reuse=True)(validate_phone_number)
+    
+    # Validación del formato de la fecha de nacimiento y rango aceptable.
+    _validate_birth_date = validator('birth_date', allow_reuse=True)(validate_birth_date)
 
     class Config:
         orm_mode = True
@@ -60,4 +97,3 @@ class UserAdminRead(UserBase):
     
     class Config:
         orm_mode = True
-

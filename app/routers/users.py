@@ -200,12 +200,6 @@ def update_normal_user(
             current_user_id=current_user["id"]
         )
         return updated_user
-    
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="No puedes actualizar otra cuenta que no sea la tuya."
-        )
         
     except Exception as e:
         raise HTTPException(
@@ -224,7 +218,7 @@ def read_normal_user(
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuario no encontrado"
+            detail="Usuario no encontrado:"
         )
 
     return db_user

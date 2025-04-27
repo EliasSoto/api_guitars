@@ -82,19 +82,18 @@ def delete_user_by_admin(db: Session, user_id: int):
 
 # Función para crear un nuevo usuario por parte de un usuario normal.
 def create_user(db: Session, user: user_schema.UserCreate):
-    # Verificamos si el correo o el RUT ya están registrados.
-    errors = []
-
+    # Se verifica si el correo ya está registrado
     if db.query(User).filter(User.email == user.email).first():
-        errors.append("El correo ya está registrado")
-
-    if db.query(User).filter(User.rut == user.rut).first():
-        errors.append("El RUT ya está registrado")
-
-    if errors:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=errors # Lista de errores
+            detail=["El correo ya está registrado"]
+        )
+
+    # Se verifica si el RUT ya está registrado
+    if db.query(User).filter(User.rut == user.rut).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=["El RUT ya está registrado"]
         )
     
     # Hasheamos la contraseña antes de guardarla.
@@ -130,6 +129,13 @@ def update_normal_user(db: Session, user_id: str, user: user_schema.UserUpdate, 
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Usuario no encontrado"
+        )
+        
+    # Se verifica si el correo ya está registrado por otro usuario.
+    if db.query(User).filter(User.email == user.email).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El correo ya está registrado"
         )
 
     # Se actualizan los campos del usuario.
