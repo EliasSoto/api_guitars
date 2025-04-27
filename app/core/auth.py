@@ -34,17 +34,20 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 def verify_token(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY_TOKEN, algorithms=[ALGORITHM])
-        nombres = payload.get("sub")
+        first_name = payload.get("first_name")
+        last_name = payload.get("last_name")
         user_id = payload.get("user_id")
         role = payload.get("role")
         rut = payload.get("rut")
         
-        if None in [nombres, user_id, role, rut]:
+        if None in [first_name, last_name, user_id, role, rut]:
             raise JWTError("Faltan campos requeridos en el token")
+        
+        fullname = f"{first_name} {last_name}"
             
         return {
             "id": user_id,
-            "username": nombres,
+            "username": fullname,
             "role": role,
             "rut": rut
         }
@@ -54,6 +57,7 @@ def verify_token(token: str = Depends(oauth2_scheme)):
             detail="Token inválido o expirado",
             headers={"WWW-Authenticate": "Bearer"}
         )
+        
 # Funciones para manejo de contraseñas
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -62,14 +66,13 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 # Función para autenticar al usuario
-def authenticate_user(db, nombres: str, hashed_password: str):
-    user = user_repo.get_user_by_nombres(db, nombres=nombres)
+def authenticate_user(db, email: str, hashed_password: str):
+    user = user_repo.get_user_by_email(db, email=email)
     if not user:
         return None
     if not verify_password(hashed_password, user.hashed_password):
         return None
     return user
-
 
 # Reutilizando el esquema pero sin error automático
 oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
@@ -81,17 +84,20 @@ def verify_token_optional(token: Optional[str] = Depends(oauth2_scheme_optional)
 
     try:
         payload = jwt.decode(token, SECRET_KEY_TOKEN, algorithms=[ALGORITHM])
-        nombres = payload.get("sub")
+        first_name = payload.get("first_name")
+        last_name = payload.get("last_name")
         user_id = payload.get("user_id")
         role = payload.get("role")
         rut = payload.get("rut")
 
-        if None in [nombres, user_id, role, rut]:
-            return None  
+        if None in [first_name, last_name, user_id, role, rut]:
+            return None
+        
+        fullname = f"{first_name} {last_name}"
 
         return {
             "id": user_id,
-            "username": nombres,
+            "username": fullname,
             "role": role,
             "rut": rut
         }

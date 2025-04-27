@@ -1,157 +1,171 @@
 from sqlalchemy.orm import Session
-from models.usuario import Usuario
+from app.models.user import User
 from fastapi import HTTPException, status
-from schemas import usuario as usuario_schema
+from app.schemas import user as user_schema
 from core.utils import hash_password
 
-#Repositorio de usuarios LISTO
+### FUNCIONES PARA USUARIOS ADMIN ###
 
-#FUNCIONES PARA USUARIOS ADMIN
+# Función para crear un nuevo usuario por parte de un administrador.
+def create_user_by_admin(db: Session, user: user_schema.UserCreateByAdmin):
+    # Verificamos si el correo o el RUT ya están registrados.
+    errors = []
 
-#FUNCIÓN CREATE
-def create_user_by_admin(db: Session, user: usuario_schema.UsuarioCreateByAdmin):
-    # Verificamos si el correo o el RUT ya están registrados
-    errores = []
+    if db.query(User).filter(User.email == user.email).first():
+        errors.append("El correo ya está registrado")
 
-    if db.query(Usuario).filter(Usuario.correo == user.correo).first():
-        errores.append("El correo ya está registrado")
+    if db.query(User).filter(User.rut == user.rut).first():
+        errors.append("El RUT ya está registrado")
 
-    if db.query(Usuario).filter(Usuario.rut == user.rut).first():
-        errores.append("El RUT ya está registrado")
-
-    if errores:
+    if errors:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=errores # Lista de errores
+            detail=errors # Lista de errores
         )
     
-    # Hasheamos la contraseña antes de guardarla
+    # Hasheamos la contraseña antes de guardarla.
     hashed_password = hash_password(user.hashed_password)  
-    db_user = Usuario(
+    db_user = User(
         rut=user.rut,
-        nombres=user.nombres,
-        apellidos=user.apellidos,
-        correo=user.correo,
-        hashed_password=hashed_password,  
-        telefono=user.telefono,
-        fecha_nacimiento=user.fecha_nacimiento,
-        es_administrador=user.es_administrador
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        hashed_password=hashed_password,
+        phone=user.phone,
+        birth_date=user.birth_date,
+        is_admin=user.is_admin
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    
     return db_user
 
-#FUNCIÓN READ
+# Función para obtener todos los usuarios.
 def get_all_users(db: Session):
-    return db.query(Usuario).all()
+    return db.query(User).all()
 
-#FUNCIÓN UPDATE
-def update_user_by_admin(db: Session, user_rut: str, user: usuario_schema.UsuarioUpdateByAdmin):
-    db_user = db.query(Usuario).filter(Usuario.rut == user_rut).first()
+# Función para actualizar un usuario por id.
+def update_user_by_admin(db: Session, user_id: str, user: user_schema.UserAdminRead):
+    db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         return None
 
-    # Actualizar los campos del usuario
-    db_user.nombres = user.nombres
-    db_user.apellidos = user.apellidos
-    db_user.correo = user.correo
-    db_user.telefono = user.telefono
-    db_user.fecha_nacimiento = user.fecha_nacimiento
-    db_user.es_administrador = user.es_administrador
+    # Se actualizan los campos del usuario.
+    db_user.first_name = user.first_name
+    db_user.last_name = user.last_name
+    db_user.email = user.email
+    db_user.rut = user.rut
+    db_user.phone = user.phone
+    db_user.birth_date = user.birth_date
+    db_user.is_admin = user.is_admin
+    
 
-    # Guardar los cambios en la base de datos
+    # Se guardan los datos en la base de datos.
     db.commit()
     db.refresh(db_user)
     return db_user
 
-#FUNCIÓN DELETE
-def delete_user_by_admin(db: Session, user_rut: str):
-    db_user = db.query(Usuario).filter(Usuario.rut == user_rut).first()
+# Función para eliminar un usuario por id.
+def delete_user_by_admin(db: Session, user_id: int):
+    db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         return None
 
+    # Se elimina el usuario de la base de datos.
     db.delete(db_user)
     db.commit()
     return db_user
-#FUNCIONES PARA USUARIOS ADMIN
 
 
-#FUNCIONES PARA USUARIOS NORMALES
+### FUNCIONES PARA USUARIOS NORMALES ###
 
-#funcion para registrarse y que ademas no puedas si estas registrado en la api
-def create_user(db: Session, user: usuario_schema.UsuarioCreate):
-    # Verificamos si el correo o el RUT ya están registrados
-    errores = []
+# Función para crear un nuevo usuario por parte de un usuario normal.
+def create_user(db: Session, user: user_schema.UserCreate):
+    # Verificamos si el correo o el RUT ya están registrados.
+    errors = []
 
-    if db.query(Usuario).filter(Usuario.correo == user.correo).first():
-        errores.append("El correo ya está registrado")
+    if db.query(User).filter(User.email == user.email).first():
+        errors.append("El correo ya está registrado")
 
-    if db.query(Usuario).filter(Usuario.rut == user.rut).first():
-        errores.append("El RUT ya está registrado")
+    if db.query(User).filter(User.rut == user.rut).first():
+        errors.append("El RUT ya está registrado")
 
-    if errores:
+    if errors:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=errores # Lista de errores
+            detail=errors # Lista de errores
         )
-        
-    hashed_password = hash_password(user.hashed_password)  # Hasheamos la contraseña antes de guardarla  
-    db_user = Usuario(
+    
+    # Hasheamos la contraseña antes de guardarla.
+    hashed_password = hash_password(user.hashed_password)  
+    db_user = User(
         rut=user.rut,
-        nombres=user.nombres,
-        apellidos=user.apellidos,
-        correo=user.correo,
-        hashed_password=hashed_password,  # Nueva contraseña hasheada
-        telefono=user.telefono,
-        fecha_nacimiento=user.fecha_nacimiento
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        hashed_password=hashed_password,
+        phone=user.phone,
+        birth_date=user.birth_date
     )
+    
+    # Se agrega el nuevo usuario a la base de datos.
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    
     return db_user
 
-#Actualizar usuario normal, los datos se obtienen por sesión.
-def update_normal_user(db: Session, user_rut: str, user: usuario_schema.UsuarioUpdate, current_user_rut: str):
-    if user_rut != current_user_rut:
-        raise PermissionError("No tienes permiso para modificar los datos de otro usuario.")
+# Función para actualizar un usuario normal logueado.
+def update_normal_user(db: Session, user_id: str, user: user_schema.UserUpdate, current_user_id: str):
+    if user_id != current_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permiso para modificar los datos de otro usuario."
+        )
 
-    db_user = db.query(Usuario).filter(Usuario.rut == user_rut).first()
+    # Se verifica si el usuario existe.
+    db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
 
-    # Actualizar campos básicos
-    if user.nombres is not None:
-        db_user.nombres = user.nombres
-    if user.apellidos is not None:
-        db_user.apellidos = user.apellidos
-    if user.correo is not None:
-        db_user.correo = user.correo
-    if user.telefono is not None:
-        db_user.telefono = user.telefono
-    if user.fecha_nacimiento is not None:
-        db_user.fecha_nacimiento = user.fecha_nacimiento
+    # Se actualizan los campos del usuario.
+    if user.first_name is not None:
+        db_user.first_name = user.first_name
+    if user.last_name is not None:
+        db_user.last_name = user.last_name
+    if user.email is not None:
+        db_user.email = user.email
+    if user.phone is not None:
+        db_user.phone = user.phone
+    if user.birth_date is not None:
+        db_user.birth_date = user.birth_date
 
-    # Actualizar contraseña solo si se proporciona
-    if user.password:  # Cambiado de hashed_password a password
+    # Se actualiza la contraseña si se proporciona una nueva.
+    if user.password:
         db_user.hashed_password = hash_password(user.password)
 
     db.commit()
     db.refresh(db_user)
     return db_user
-#FUNCIONES PARA USUARIOS NORMALES
 
+### FUNCIONES COMPLEMENTARIAS ###
 
-#FUNCIONES COMPLEMENTARIAS
-#Función que obtiene un usuario por su RUT
+# Función que obtiene un usuario por su RUT.
 def get_user_by_rut(db: Session, user_rut: str):
-    return db.query(Usuario).filter(Usuario.rut == user_rut).first()
+    return db.query(User).filter(User.rut == user_rut).first()
 
-#Función que obtiene un usuario por su ID
+# Función que obtiene un usuario por su ID.
 def get_user_by_id(db: Session, user_id: int):
-    return db.query(Usuario).filter(Usuario.id == user_id).first()
+    return db.query(User).filter(User.id == user_id).first()
 
-#Función que obtiene un usuario por su nombre (DEBERIA SER POR CORREO)
-def get_user_by_nombres(db: Session, nombres: str):
-    return db.query(Usuario).filter(Usuario.nombres == nombres).first()
-#FUNCIONES COMPLEMENTARIAS
+# Función que obtiene un usuario por su correo.
+def get_user_by_email(db: Session, email: str):
+    return db.query(User).filter(User.email == email).first()
+
+#Función que obtiene un usuario por su nombre.
+def get_user_by_nombres(db: Session, first_name: str):
+    return db.query(User).filter(User.first_name == first_name).first()

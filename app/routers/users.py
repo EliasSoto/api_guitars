@@ -1,27 +1,26 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from schemas import usuario as usuario_schema
+from app.schemas import user as user_schema
 from repositories import user_repo
 from database.session import get_db
 from core.auth import verify_token, verify_token_optional
 from typing import List, Optional
-from schemas.usuario import UsuarioRead
 
-# Necesario para la creación de la API en MAIN
+# Necesario para la creación de la API en MAIN.
 router = APIRouter()
 
-#Endpoint para la raíz de la API. Oculto (false)
+# Endpoint para la raíz de la API. Oculto (false)
 @router.get("/", tags=["Inicio"], include_in_schema=False)
 def read_root():
     return {"message": "Bienvenido a la API de Proyecto Guitarras."}
 
 
-#ENDPOINTS DE USUARIOS ADMINISTRADORES
+### ENDPOINTS DE USUARIOS ADMINISTRADORES ###
 
 # Endpoint para crear un nuevo usuario por parte de un administrador.
-@router.post("/admin/usuarios", tags=["Usuarios Admin"], response_model=usuario_schema.UsuarioRead)
+@router.post("/admin/usuarios", tags=["Usuarios Admin"], response_model=user_schema.UserRead)
 def create_users(
-    user: usuario_schema.UsuarioCreateByAdmin,
+    user: user_schema.UserCreateByAdmin,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
@@ -35,9 +34,9 @@ def create_users(
 
     return new_user
 
-#Endpoint para obtener todos los usuarios (solo admin).
-@router.get("/admin/usuarios", tags=["Usuarios Admin"], response_model=List[UsuarioRead])
-def read_users(
+#Endpoint para obtener todos los usuarios.
+@router.get("/admin/usuarios", tags=["Usuarios Admin"], response_model=List[user_schema.UserRead])
+def read_all_users(
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
@@ -49,61 +48,107 @@ def read_users(
 
     return user_repo.get_all_users(db=db)   
 
-# Endpoint para actualizar un usuario por parte de un administrador.
-@router.put("/admin/usuarios/{user_rut}", tags=["Usuarios Admin"], response_model=usuario_schema.UsuarioRead)
-def update_user(
-    user_rut: str,
-    user: usuario_schema.UsuarioUpdateByAdmin,
+# Endpoint para obtener un usuario por id.
+@router.get("/admin/usuarios/{user_id}", tags=["Usuarios Admin"], response_model=user_schema.UserRead)
+def read_user(
+    user_id: int,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
+    # Se verifica que el usuario logueado sea admin.
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para ver otros usuarios"
+        )
+
+    db_user = user_repo.get_user_by_id(db=db, user_id=user_id)
+
+    # Se verifica que el usuario exista.
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    return db_user
+
+# Endpoint para actualizar un usuario por id.
+@router.put("/admin/usuarios/{user_id}", tags=["Usuarios Admin"], response_model=user_schema.UserAdminRead)
+def update_user(
+    user_id: int,
+    user: user_schema.UserUpdateByAdmin,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    # Se verifica que el usuario logueado sea admin.
     if current_user["role"] != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permisos para actualizar usuarios"
         )
 
-    db_user = user_repo.get_user_by_rut(db=db, user_rut=user_rut)
+    db_user = user_repo.get_user_by_id(db=db, user_id=user_id)
 
+    # Se verifica que el usuario exista.
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Usuario no encontrado"
         )
+        
+    # Se verifica que el usuario logueado no esté intentando actualizar su propio perfil.
+    if current_user["id"] == user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No puedes modificar tu propio usuario."
+        )
 
+    # Se intenta actualizar el usuario y se maneja la excepción en caso de error.
     try:
-        updated_user = user_repo.update_user_by_admin(db=db, user_rut=user_rut, user=user)
+        updated_user = user_repo.update_user_by_admin(db=db, user_id=user_id, user=user)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al actualizar el usuario: {str(e)}"
         )
-
+        
     return updated_user
+    
 
 # Endpoint para eliminar un usuario por parte de un administrador.
-@router.delete("/admin/usuarios/{user_rut}", tags=["Usuarios Admin"])
+@router.delete("/admin/usuarios/{user_id}", tags=["Usuarios Admin"])
 def delete_user(
-    user_rut: str,
+    user_id: int,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
+    # Se verifica que el usuario logueado sea admin.
     if current_user["role"] != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permisos para eliminar usuarios"
         )
 
-    db_user = user_repo.get_user_by_rut(db=db, user_rut=user_rut)
+    db_user = user_repo.get_user_by_id(db=db, user_id=user_id)
 
+    # Se verifica que el usuario exista.
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Usuario no encontrado"
         )
+        
+    # Se verifica que el usuario no intente eliminar su propio perfil.
+    if user_id == current_user["id"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No puedes eliminarte a ti mismo"
+        )
 
+    # Se intenta eliminar el usuario y se maneja la excepción en caso de error.
     try:
-        user_repo.delete_user_by_admin(db=db, user_rut=user_rut)
+        user_repo.delete_user_by_admin(db=db, user_id=user_id)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -112,79 +157,56 @@ def delete_user(
 
     return {"message": "Usuario eliminado correctamente"}
 
-# Endpoint para obtener un usuario por id
-@router.get("/admin/usuarios/{user_id}", tags=["Usuarios Admin"], response_model=usuario_schema.UsuarioRead)
-def get_user_by_id(
-    user_id: int,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(verify_token)
-):
-    if current_user["role"] != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes permisos para ver usuarios"
-        )
+### ENDPOINTS DE USUARIOS NORMALES ###
 
-    db_user = user_repo.get_user_by_id(db=db, user_id=user_id)
-
-    if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuario no encontrado"
-        )
-
-    return db_user
-
-#ENDPOINTS DE USUARIOS ADMINISTRADORES
-
-
-#ENDPOINTS DE USUARIOS NORMALES
-
-#ENDPOINT PUBLICO, Se verfiica el token de manera opcional porque si no tengo cuenta no tengo token.
-#Registro de un nuevo usuario normal que no tiene cuenta.
-@router.post("/usuarios", tags=["Usuarios Normales"], response_model=usuario_schema.UsuarioRead)
-def register_user(
-    user: usuario_schema.UsuarioCreate,
+# Endpoint para registrar un nuevo usuario normal. (Endpoint Público).
+@router.post("/usuarios", tags=["Usuarios Normales"], response_model=user_schema.UserRead)
+def create_normal_user(
+    user: user_schema.UserCreate,
     db: Session = Depends(get_db),
     current_user: Optional[dict] = Depends(verify_token_optional)  
 ):
+    # Se verifica si el usuario está logueado.
     if current_user:
-        print("Usuario autenticado:", current_user)
-        # si quieres restringir que no se registren de nuevo si ya tienen cuenta
-        db_user = user_repo.get_user_by_rut(db=db, user_rut=current_user["rut"])
+        db_user = user_repo.get_user_by_id(db=db, user_id=current_user["id"])
         if db_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Ya tienes una cuenta"
+                detail="Ya tienes una cuenta registrada"
             )
 
-    # Crear usuario nuevo
+    # Se intenta crear el usuario y se maneja la excepción en caso de error.
     try:
         new_user = user_repo.create_user(db=db, user=user)
         return new_user
     except Exception as e:
         raise HTTPException(
-            status_code=500,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al crear usuario: {str(e)}"
         )
 
 # Endpoint para actualizar un usuario normal logueado.
-@router.put("/usuarios", tags=["Usuarios Normales"], response_model=usuario_schema.UsuarioRead)
+@router.put("/usuarios", tags=["Usuarios Normales"], response_model=user_schema.UserRead)
 def update_normal_user(
-    user_update: usuario_schema.UsuarioUpdate, 
+    user_update: user_schema.UserUpdate, 
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
     try:
         updated_user = user_repo.update_normal_user(
             db=db,
-            user_rut=current_user["rut"],
+            user_id=current_user["id"],
             user=user_update, 
-            current_user_rut=current_user["rut"]
+            current_user_id=current_user["id"]
         )
         return updated_user
-    except PermissionError as e:
-        raise HTTPException(status_code=403, detail=str(e))
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No puedes actualizar otra cuenta que no sea la tuya."
+        )
+        
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -192,12 +214,12 @@ def update_normal_user(
         )
         
 # Endpoint para obtener el perfil del usuario normal logueado.
-@router.get("/usuarios", tags=["Usuarios Normales"], response_model=usuario_schema.UsuarioRead)
-def get_normal_user(
+@router.get("/usuarios", tags=["Usuarios Normales"], response_model=user_schema.UserRead)
+def read_normal_user(
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
-    db_user = user_repo.get_user_by_rut(db=db, user_rut=current_user["rut"])
+    db_user = user_repo.get_user_by_id(db=db, user_id=current_user["id"])
 
     if not db_user:
         raise HTTPException(
@@ -206,7 +228,5 @@ def get_normal_user(
         )
 
     return db_user
-
-#ENDPOINTS DE USUARIOS NORMALES
 
 

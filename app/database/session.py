@@ -3,6 +3,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 import os
 
+# Descomentar estas dos lineas para ejecutar en local.
+from dotenv import load_dotenv
+load_dotenv()
+
 # Configuración de la base de datos
 URL_DATABASE = os.getenv("URL_DATABASE")
 # Crear el motor de conexión

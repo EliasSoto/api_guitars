@@ -1,96 +1,109 @@
 from sqlalchemy.orm import Session
-from models.direccion import Direccion
-from schemas.direccion import DireccionCreate
+from models.address import Address
+from app.schemas import address as address_schema
 from fastapi import HTTPException, status
 
-# Crear una nueva dirección
-def create_address(db: Session, user_id: int, direccion: DireccionCreate):
-    # Siempre que se crea una nueva, se inactivan las anteriores
-    db.query(Direccion).filter(
-        Direccion.id_usuario == user_id,
-        Direccion.es_activa == True
-    ).update({"es_activa": False})
+### FUNCIONES PARA DIRECCIONES ###
 
-    # Se crea una nueva dirección forzadamente activa
-    nueva_direccion = Direccion(
-        numero_calle=direccion.numero_calle,
-        region=direccion.region,
-        comuna=direccion.comuna,
-        indicaciones=direccion.indicaciones,
-        tipo_domicilio=direccion.tipo_domicilio,
-        id_usuario=user_id,
-        es_activa=True
-    )
+# Función para crear una nueva dirección para un usuario.
+def create_address(db: Session, user_id: int, address: address_schema.AddressCreate):
+    # Siempre que se crea una nueva dirección, se inactivan las anteriores.
+    try:
+        db.query(Address).filter(
+            Address.user_id == user_id,  # Verificar que es el mismo usuario
+            Address.is_active == True  # Solo se desactivan las activas
+        ).update({"is_active": False})
+        
+        # Se crea una nueva dirección forzadamente activa
+        db_address = Address(
+            street_name=address.street_name,
+            region=address.region,
+            commune=address.commune,
+            directions=address.directions,
+            address_type=address.address_type,
+            user_id=user_id,
+            is_active=True  # Esta será la nueva dirección activa
+        )
 
-    db.add(nueva_direccion)
-    db.commit()
-    db.refresh(nueva_direccion)
+        db.add(db_address)
+        db.commit()
+        db.refresh(db_address)  # Refrescamos para obtener la dirección con ID
 
-    return nueva_direccion
+        return db_address
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al crear la dirección: {str(e)}"
+        )
 
-# Actualizar una dirección específica por ID
-def update_address(db: Session, user_id: int, direccion_id: int, direccion_data: DireccionCreate):
-    direccion = db.query(Direccion).filter(
-        Direccion.id == direccion_id,
-        Direccion.id_usuario == user_id
+# Función para actualizar una dirección específica por id.
+def update_address(db: Session, user_id: int, address_id: int, address_data: address_schema.AddressUpdate):
+    address = db.query(Address).filter(
+        Address.id == address_id,
+        Address.user_id == user_id
     ).first()
 
-    # Validamos que la dirección exista para el usuario
-    if not direccion:
+    # Se verifica que la dirección exista.
+    if not address:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Dirección no encontrada"
         )
         
-    # Validamos que no se pueda actualizar una dirección activa
-    if direccion.es_activa and not direccion_data.es_activa:
+    # Se valida que no se pueda actualizar una dirección activa.
+    if address.is_active and not address_data.is_active:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No puedes actualizar una dirección que ya está activa"
         )
 
-    # Si se está activando esta dirección, desactivamos las otras
-    if direccion_data.es_activa:
-        db.query(Direccion).filter(
-            Direccion.id_usuario == user_id,
-            Direccion.id != direccion_id,
-            Direccion.es_activa == True
-        ).update({"es_activa": False})
+    # Si la nueva dirección es activa, inactivamos las anteriores.
+    if address_data.is_active:
+        db.query(Address).filter(
+            Address.user_id == user_id,
+            Address.id != address_id,
+            Address.is_active == True
+        ).update({"is_active": False})
 
-    # Actualizamos todos los campos, incluido es_activa
-    direccion.numero_calle = direccion_data.numero_calle
-    direccion.region = direccion_data.region
-    direccion.comuna = direccion_data.comuna
-    direccion.indicaciones = direccion_data.indicaciones
-    direccion.tipo_domicilio = direccion_data.tipo_domicilio
-    direccion.es_activa = direccion_data.es_activa
-
+    # Se actualizan los campos de la dirección.
+    address.street_name = address_data.street_name
+    address.region = address_data.region
+    address.commune = address_data.commune
+    address.directions = address_data.directions
+    address.address_type = address_data.address_type
+    address.is_active = address_data.is_active
+        
     db.commit()
-    db.refresh(direccion)
+    db.refresh(address)
 
-    return direccion
+    return address
 
-# Eliminar una dirección específica por ID
-def delete_address_by_id(db: Session, user_id: int, direccion_id: int):
-    direccion = db.query(Direccion).filter(
-        Direccion.id == direccion_id,
-        Direccion.id_usuario == user_id
+# Función para eliminar una dirección específica por id.
+def delete_address_by_id(db: Session, user_id: int, address_id: int):
+    address = db.query(Address).filter(
+        Address.id == address_id,
+        Address.user_id == user_id
     ).first()
 
-    if not direccion:
-        raise HTTPException(status_code=404, detail="Dirección no encontrada")
+    # Se verifica que la dirección exista.
+    if not address:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Dirección no encontrada"
+        )
 
-    if direccion.es_activa:
-        raise HTTPException(status_code=400, detail="No se puede eliminar una dirección activa")
+    # Se valida que no se pueda eliminar una dirección activa.
+    if address.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No se puede eliminar una dirección activa."
+        )
 
-    db.delete(direccion)
+    db.delete(address)
     db.commit()
 
     return {"message": "Dirección eliminada correctamente"}
 
-
-#FUNCIONES COMPLEMENTARIAS
-# Obtener todas las direcciones de un usuario
+# Función para obtener todas las direcciones por id.
 def get_all_addresses(db: Session, user_id: int):
-    return db.query(Direccion).filter(Direccion.id_usuario == user_id).all()
-#FUNCIONES COMPLEMENTARIAS
+    return db.query(Address).filter(Address.user_id == user_id).all()
