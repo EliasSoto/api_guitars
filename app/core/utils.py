@@ -1,5 +1,5 @@
 import bcrypt, re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Función para hashear la contraseña
 def hash_password(password: str) -> str:
@@ -53,32 +53,3 @@ def validate_phone_number(phone: str):
     if len(phone_clean) != 9:
         raise ValueError('El número de teléfono debe tener 9 dígitos.')
     return phone_clean
-
-# Validación del formato de la fecha de nacimiento y rango aceptable.
-def validate_birth_date(birth_date: str) -> str:
-    if birth_date is None:
-        return birth_date
-    
-    # Validación precisa del formato DD/MM/YYYY.
-    pattern = r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$'
-    if not re.match(pattern, birth_date):
-        raise ValueError('La fecha de nacimiento debe tener el formato DD/MM/YYYY y ser una fecha válida.')
-    
-    # Se obtiene separa la fecha en partes.
-    day, month, year = map(int, birth_date.split('/'))
-    
-    # Se obtiene la fecha actual y se calcula la edad mínima.
-    current_date = datetime.now()
-    
-    # Se crea una fecha con el año, mes y día de nacimiento.
-    new_birth_date = datetime(year, month, day)
-            
-    # Se verifica que la fecha de nacimiento no se posterior a a la fecha actual.
-    if new_birth_date > current_date:
-        raise ValueError('La fecha de nacimiento no puede ser posterior a la fecha actual.')
-    
-    # Se verifica que la fecha de nacimiento no anterior al 1900.
-    if year < 1900:
-        raise ValueError('La fecha de nacimiento no puede ser anterior al año 1900.')
-    
-    return birth_date

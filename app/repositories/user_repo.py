@@ -49,7 +49,10 @@ def get_all_users(db: Session):
 def update_user_by_admin(db: Session, user_id: str, user: user_schema.UserAdminRead):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
 
     # Se actualizan los campos del usuario.
     db_user.first_name = user.first_name
@@ -70,7 +73,10 @@ def update_user_by_admin(db: Session, user_id: str, user: user_schema.UserAdminR
 def delete_user_by_admin(db: Session, user_id: int):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
 
     # Se elimina el usuario de la base de datos.
     db.delete(db_user)

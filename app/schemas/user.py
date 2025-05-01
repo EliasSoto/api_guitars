@@ -1,46 +1,36 @@
 from pydantic import BaseModel, EmailStr, validator, Field
 from typing import Optional
-from core.utils import validate_rut, validate_phone_number, validate_birth_date
+from core.utils import validate_rut, validate_phone_number
+from datetime import date
 
-# Base común para todos los usuarios.
+# Base común para todos los usuarios. (Se usa para crear y leer usuarios, para actualizar se usa un BaseModel)
 class UserBase(BaseModel):
     first_name: str = Field(..., min_length=2, max_length=50)
     last_name: str = Field(..., min_length=2, max_length=50)
     email: EmailStr
-    phone: str
-    birth_date: str
+    phone: str = Field(..., min_length=9, max_length=9)
+    birth_date: date = Field(..., description="Fecha de nacimiento en formato YYYY-MM-DD")
 
 # Registro normal de usuario. (sin permisos de admin)
 class UserCreate(UserBase):
-    rut: str
-    hashed_password: str = Field(..., min_length=4, max_length=20)  # Contraseña obligatoria.
+    rut: str = Field(..., min_length=8, max_length=12)
+    hashed_password: str = Field(..., min_length=8, max_length=20)  # Contraseña obligatoria.
     
-    # Validación del RUT.
+    # Validaciones personalizadas para los campos.
     _validate_rut = validator('rut', allow_reuse=True)(validate_rut)
-    
-    # Validación del número de teléfono.
-    @validator('phone')
-    def phone_must_be_valid(cls, v):
-        return validate_phone_number(v)
-    
-    # Validación del formato de la fecha de nacimiento y rango aceptable.
-    @validator('birth_date')
-    def birth_date_must_be_valid(cls, v):
-        return validate_birth_date(v)
+    _validate_phone = validator('phone', allow_reuse=True)(validate_phone_number)
 
 # Actualización de datos por el usuario. (sin cambiar su rol ni ID)
-class UserUpdate(UserBase):
-    phone: Optional[str] = None
-    birth_date: Optional[str] = None
+class UserUpdate(BaseModel):
     first_name: Optional[str] = Field(None, min_length=2, max_length=50)
     last_name: Optional[str] = Field(None, min_length=2, max_length=50)
-    password: Optional[str] = Field(None, min_length=8, max_length=20)  # Contraseña opcional.
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(None, min_length=9, max_length=9)
+    birth_date: Optional[date] = None
+    password: Optional[str] = Field(None, min_length=8, max_length=20)
     
-    # Validación del número de teléfono.
+    ## Validaciones personalizadas para los campos.
     _validate_phone = validator('phone', allow_reuse=True)(validate_phone_number)
-    
-    # Validación del formato de la fecha de nacimiento y rango aceptable.
-    _validate_birth_date = validator('birth_date', allow_reuse=True)(validate_birth_date)
 
 # Respuesta al frontend. (no incluye contraseña)
 class UserRead(UserBase):
@@ -51,46 +41,34 @@ class UserRead(UserBase):
     class Config:
         orm_mode = True
 
-
 # Creación de usuario por parte del admin (con permiso para asignar rol)
 class UserCreateByAdmin(UserBase):
-    rut: str
+    rut: str = Field(..., min_length=8, max_length=12)
     hashed_password: str = Field(..., min_length=8, max_length=20)  # Contraseña obligatoria.
     is_admin: bool = False
     
-    # Validación del RUT.
+    # Validaciones personalizadas para los campos.
     _validate_rut = validator('rut', allow_reuse=True)(validate_rut)
-    
-    # Validación del número de teléfono.
     _validate_phone = validator('phone', allow_reuse=True)(validate_phone_number)
-    
-    # Validación del formato de la fecha de nacimiento y rango aceptable.
-    _validate_birth_date = validator('birth_date', allow_reuse=True)(validate_birth_date)
-
 
 # Actualización por parte del admin (sin contraseña)
 class UserUpdateByAdmin(BaseModel):
     first_name: Optional[str] = Field(None, min_length=2, max_length=50)
     last_name: Optional[str] = Field(None, min_length=2, max_length=50)
     email: Optional[EmailStr] = None
-    phone: Optional[str] = None
-    birth_date: Optional[str] = None
-    rut: Optional[str] = None
-    is_admin: Optional[bool] = None  # Rol de admin opcional
+    phone: Optional[str] = Field(None, min_length=9, max_length=9)
+    birth_date: Optional[date] = None
+    rut: Optional[str] = Field(..., min_length=8, max_length=12)
+    is_admin: Optional[bool] = None
     
-    # Validación del RUT.
+    # Validaciones personalizadas para los campos.
     _validate_rut = validator('rut', allow_reuse=True)(validate_rut)
-    
-    # Validación del número de teléfono.
     _validate_phone = validator('phone', allow_reuse=True)(validate_phone_number)
-    
-    # Validación del formato de la fecha de nacimiento y rango aceptable.
-    _validate_birth_date = validator('birth_date', allow_reuse=True)(validate_birth_date)
 
     class Config:
         orm_mode = True
 
-# Respuesta al frontend para el admin (incluye rol y no contraseña)
+# Respuesta al frontend para el admin (sin contraseña)
 class UserAdminRead(UserBase):
     rut: str
     is_admin: bool

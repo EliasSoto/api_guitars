@@ -1,19 +1,24 @@
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String, Date
 from sqlalchemy.orm import relationship
 from database.base import Base
+from .order import Order
+from .shipment import Shipment
+from .order_detail import OrderDetail
+from .order_shipment_detail import OrderShipmentDetail
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
     rut = Column(String, unique=True, index=True)
-    first_name = Column(String, index=True)
-    last_name = Column(String, index=True)
+    first_name = Column(String)
+    last_name = Column(String)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
-    phone = Column(String, index=True)
-    birth_date = Column(String, index=True)
+    phone = Column(String)
+    birth_date = Column(Date)
     is_admin = Column(Boolean, default=False)
 
-    # Relación con direccion (bidireccional)
-    address = relationship("Address", back_populates="user")
+    # Relaciones
+    addresses = relationship("Address", back_populates="user")
+    orders = relationship("Order", back_populates="user")

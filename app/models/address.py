@@ -10,9 +10,9 @@ class Address(Base):
     region = Column(String, index=True)
     commune = Column(String, index=True)
     directions = Column(String, nullable=True)
-    address_type = Column(String, index=True)
+    address_type = Column(String)
     is_active = Column(Boolean, default=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
 
-    # Relación con usuario (bidireccional)
-    user = relationship("User", back_populates="address")
+    # Relaciones
+    user = relationship("User", back_populates="addresses")

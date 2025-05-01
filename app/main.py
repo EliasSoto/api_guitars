@@ -10,6 +10,7 @@ from database.session import engine
 from routers import users
 from routers import address
 from routers import login
+from routers import guitar
 from fastapi.middleware.cors import CORSMiddleware
 
 # Crear las tablas en la base de datos
@@ -32,3 +33,5 @@ app.add_middleware(
 app.include_router(login.router)
 app.include_router(users.router)
 app.include_router(address.router)
+app.include_router(guitar.router)
+
