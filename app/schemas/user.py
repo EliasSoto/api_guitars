@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, validator, Field
 from typing import Optional
-from core.utils import validate_rut, validate_phone_number
+from core.utils import validate_rut, validate_phone_number, validate_birth_date, validate_birth_date_admin
 from datetime import date
 
 # Base común para todos los usuarios. (Se usa para crear y leer usuarios, para actualizar se usa un BaseModel)
@@ -19,6 +19,8 @@ class UserCreate(UserBase):
     # Validaciones personalizadas para los campos.
     _validate_rut = validator('rut', allow_reuse=True)(validate_rut)
     _validate_phone = validator('phone', allow_reuse=True)(validate_phone_number)
+    _validate_birth_date = validator('birth_date', allow_reuse=True)(validate_birth_date)
+    
 
 # Actualización de datos por el usuario. (sin cambiar su rol ni ID)
 class UserUpdate(BaseModel):
@@ -26,7 +28,6 @@ class UserUpdate(BaseModel):
     last_name: Optional[str] = Field(None, min_length=2, max_length=50)
     email: Optional[EmailStr] = None
     phone: Optional[str] = Field(None, min_length=9, max_length=9)
-    birth_date: Optional[date] = None
     password: Optional[str] = Field(None, min_length=8, max_length=20)
     
     ## Validaciones personalizadas para los campos.
@@ -50,6 +51,7 @@ class UserCreateByAdmin(UserBase):
     # Validaciones personalizadas para los campos.
     _validate_rut = validator('rut', allow_reuse=True)(validate_rut)
     _validate_phone = validator('phone', allow_reuse=True)(validate_phone_number)
+    _validate_birth_date = validator('birth_date', allow_reuse=True)(validate_birth_date_admin)
 
 # Actualización por parte del admin (sin contraseña)
 class UserUpdateByAdmin(BaseModel):
@@ -64,6 +66,7 @@ class UserUpdateByAdmin(BaseModel):
     # Validaciones personalizadas para los campos.
     _validate_rut = validator('rut', allow_reuse=True)(validate_rut)
     _validate_phone = validator('phone', allow_reuse=True)(validate_phone_number)
+    _validate_birth_date = validator('birth_date', allow_reuse=True)(validate_birth_date)
 
     class Config:
         orm_mode = True

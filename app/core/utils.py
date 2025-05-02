@@ -1,5 +1,5 @@
 import bcrypt, re
-from datetime import datetime, timedelta
+from datetime import date
 
 # Función para hashear la contraseña
 def hash_password(password: str) -> str:
@@ -53,3 +53,20 @@ def validate_phone_number(phone: str):
     if len(phone_clean) != 9:
         raise ValueError('El número de teléfono debe tener 9 dígitos.')
     return phone_clean
+
+# Validación de la fecha de nacimiento.
+def validate_birth_date(birth_date: date) -> date:
+    today = date.today()
+    age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+    if age < 13 or age > 65:
+        raise ValueError('La edad debe estar entre 13 y 65 años.')
+    return birth_date
+
+# Validación de la fecha de nacimiento.
+def validate_birth_date_admin(birth_date: date) -> date:
+    today = date.today()
+    age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+    if age < 18 or age > 65:
+        raise ValueError('La edad debe estar entre 18 y 65 años.')
+    return birth_date
+   

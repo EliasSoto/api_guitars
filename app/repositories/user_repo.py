@@ -153,8 +153,6 @@ def update_normal_user(db: Session, user_id: str, user: user_schema.UserUpdate, 
         db_user.email = user.email
     if user.phone is not None:
         db_user.phone = user.phone
-    if user.birth_date is not None:
-        db_user.birth_date = user.birth_date
 
     # Se actualiza la contraseña si se proporciona una nueva.
     if user.password:
