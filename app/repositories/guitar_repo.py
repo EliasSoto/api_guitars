@@ -34,7 +34,7 @@ def create_guitar(db: Session, guitar: guitar_schema.GuitarCreate):
 def get_all_guitar(db: Session):
     return db.query(Guitar).all()
 
-# Función para actualizar un usuario por id.
+# Función para actualizar una guitarra por id.
 def update_guitar(db: Session, guitar_id: int, guitar_data: guitar_schema.GuitarUpdate):
     db_guitar = db.query(Guitar).filter(Guitar.id == guitar_id).first()
     if not db_guitar:

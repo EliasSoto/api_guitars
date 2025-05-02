@@ -3,17 +3,11 @@ from sqlalchemy.orm import Session
 from app.schemas import guitar as guitar_schema
 from repositories import guitar_repo
 from database.session import get_db
-from core.auth import verify_token, verify_token_optional
-from typing import List, Optional
+from core.auth import verify_token
+from typing import List
 
 # Necesario para la creación de la API en MAIN.
 router = APIRouter()
-
-# Endpoint para la raíz de la API. Oculto (false)
-@router.get("/", tags=["Inicio"], include_in_schema=False)
-def read_root():
-    return {"message": "Bienvenido a la API de Proyecto Guitarras."}
-
 
 ### ENDPOINTS PARA ADMINISTRADORES DE GUITARRAS ###
 
@@ -43,7 +37,7 @@ def read_all_guitars(
     if current_user["role"] != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes permisos para ver los usuarios"
+            detail="No tienes permisos para ver las guitarras"
         )
 
     return guitar_repo.get_all_guitar(db=db)   
@@ -80,7 +74,7 @@ def update_guitar(
     return guitar_repo.update_guitar(db=db, guitar_id=guitar_id, guitar_data=guitar)
     
 
-# Endpoint para eliminar un usuario por parte de un administrador.
+# Endpoint para eliminar una guitarra por parte de un administrador.
 @router.delete("/admin/guitarras/{guitar_id}", tags=["Guitarras Admin"])
 def delete_guitar(
     guitar_id: int,
@@ -93,8 +87,7 @@ def delete_guitar(
             detail="No tienes permisos para actualizar guitarras"
         )
 
-    guitar_repo.delete_guitar(db=db, guitar_id=guitar_id)
-    return {"message": "Guitarra eliminada correctamente"}
+    return guitar_repo.delete_guitar(db=db, guitar_id=guitar_id)
 
 ### ENDPOINTS DE USUARIOS NORMALES ###
 
