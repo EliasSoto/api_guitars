@@ -115,3 +115,25 @@ def delete_user_address(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al eliminar la dirección: {str(e)}"
         )
+
+# Endpoint para obtener la dirección activa del usuario autenticado
+@router.get("/direcciones/activa", tags=["Direcciones Usuarios"], response_model=address_schema.AddressRead)
+def get_active_address(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    db_user = user_repo.get_user_by_id(db=db, user_id=current_user["id"])
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    active_address = address_repo.get_active_address(db=db, user_id=db_user.id)
+    if not active_address:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No tienes una dirección activa"
+        )
+
+    return active_address

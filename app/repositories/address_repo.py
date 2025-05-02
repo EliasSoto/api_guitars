@@ -107,3 +107,12 @@ def delete_address_by_id(db: Session, user_id: int, address_id: int):
 # Función para obtener todas las direcciones por id.
 def get_all_addresses(db: Session, user_id: int):
     return db.query(Address).filter(Address.user_id == user_id).all()
+
+# Función para saber si una dirección es activa.
+def get_active_address(db: Session, user_id: int):
+    active_address = db.query(Address).filter(
+        Address.user_id == user_id,
+        Address.is_active == True
+    ).first()
+
+    return active_address
