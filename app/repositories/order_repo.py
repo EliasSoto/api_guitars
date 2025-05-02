@@ -4,12 +4,22 @@ from fastapi import HTTPException, status
 from app.schemas import order as order_schema
 from app.schemas.order import OrderListResponse
 from app.models.order_detail import OrderDetail
+from app.models.guitar import Guitar
 
 ### FUNCIONES PARA USUARIOS ADMIN ###
 
 # Función para crear una nuevo pedido.
 def create_order(db: Session, user_id: int, order: order_schema.OrderCreate):  
     try:
+        # Verificar si al menos una guitarra es válida
+        valid_guitars = [guitar_id for guitar_id in order.guitar_ids if db.query(Guitar).filter(Guitar.id == guitar_id).first()]
+
+        if not valid_guitars:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No hay guitarras válidas en el pedido."
+            )
+            
         # Crear el pedido
         db_order = Order(
             user_id=user_id,
@@ -24,17 +34,19 @@ def create_order(db: Session, user_id: int, order: order_schema.OrderCreate):
         db.commit()
         db.refresh(db_order)
 
-        # Crear registros en OrderDetail para cada guitarra
+        # Verificar y agregar registros en OrderDetail para cada guitarra
         for guitar_id in order.guitar_ids:
-            order_detail = OrderDetail(order_id=db_order.id, guitar_id=guitar_id)
-            db.add(order_detail)
+            # Verificar si la guitarra existe
+            guitar = db.query(Guitar).filter(Guitar.id == guitar_id).first()
+            if guitar:
+                order_detail = OrderDetail(order_id=db_order.id, guitar_id=guitar_id)
+                db.add(order_detail)
+            # Si no existe la guitarra se omite
 
         db.commit()  # Confirmar los detalles
 
-        # Obtener los guitar_ids desde OrderDetail
-        guitar_ids = db.query(OrderDetail.guitar_id).filter(OrderDetail.order_id == db_order.id).all()
-        db_order.guitar_ids = [g[0] for g in guitar_ids]
-
+        # Refrescar el pedido con relaciones
+        db.refresh(db_order)
         return db_order
 
     except Exception as e:
