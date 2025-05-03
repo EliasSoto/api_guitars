@@ -7,6 +7,8 @@ class Guitar(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     model = Column(String, index=True)
+    brand = Column(String, index=True)
+    description = Column(String)
     purchase_price = Column(Float)
     sale_price = Column(Float)
     net_price = Column(Float)
