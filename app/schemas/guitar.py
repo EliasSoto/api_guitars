@@ -22,7 +22,7 @@ class GuitarBase(BaseModel):
     color: str = Field(..., min_length=2, max_length=30)
     stock: int = Field(..., ge=0)
     is_custom: bool = False
-    fret_count: int = Field(..., ge=1)
+    fret_count: int = Field(..., ge=21, le=24)
 
 # Para crear una guitarra
 class GuitarCreate(GuitarBase):
