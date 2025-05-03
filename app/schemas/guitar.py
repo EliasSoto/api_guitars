@@ -16,7 +16,7 @@ class GuitarBase(BaseModel):
     purchase_price: float = Field(..., gt=0)
     sale_price: float = Field(..., gt=0)
     net_price: float = Field(..., gt=0)
-    iva: float = Field(..., ge=0, le=1)
+    iva: float = Field(..., gt=0)
     liquidation_price: float = Field(..., gt=0)
     purchase_date: date
     wood_type: str = Field(..., min_length=2, max_length=50)
