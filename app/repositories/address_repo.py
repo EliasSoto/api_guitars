@@ -116,3 +116,15 @@ def get_active_address(db: Session, user_id: int):
     ).first()
 
     return active_address
+
+# Función para obtener todas las direcciones por id de usuario.
+def get_all_addresses_by_user_id(db: Session, user_id: int):
+    addresses = db.query(Address).filter(Address.user_id == user_id).all()
+
+    if not addresses:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No se encontraron direcciones para este usuario"
+        )
+
+    return addresses

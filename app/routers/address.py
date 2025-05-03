@@ -9,6 +9,25 @@ from fastapi.responses import JSONResponse
 # Necesario para la creación de la API en MAIN
 router = APIRouter()
 
+# Endpoint para obtener todas las direcciones del usuario por id
+@router.get("/admin/direcciones", tags=["Direcciones Admin"], response_model=list[address_schema.AddressRead])
+def read_all_addresses_by_user_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    # Se verifica que el usuario autenticado sea un administrador.
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para ver las direcciones de otros usuarios"
+        )
+
+    # Se obtienen todas las direcciones del usuario por id.
+    addresses = address_repo.get_all_addresses_by_user_id(db=db, user_id=user_id)
+
+    return addresses
+
 # Endpoint para crear la dirección activa del usuario autenticado
 @router.post("/direcciones", tags=["Direcciones Usuarios"], response_model=address_schema.AddressRead)
 def create_address(
