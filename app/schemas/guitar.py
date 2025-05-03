@@ -11,6 +11,8 @@ from datetime import date
 # Base común para todas las guitarras
 class GuitarBase(BaseModel):
     model: str = Field(..., min_length=2, max_length=100)
+    brand: str = Field(..., min_length=2, max_length=50)
+    description: str = Field(..., min_length=10, max_length=500)
     purchase_price: float = Field(..., gt=0)
     sale_price: float = Field(..., gt=0)
     net_price: float = Field(..., gt=0)
@@ -31,6 +33,8 @@ class GuitarCreate(GuitarBase):
 # Para actualizar una guitarra
 class GuitarUpdate(BaseModel):
     model: Optional[str] = Field(None, min_length=2, max_length=100)
+    brand: Optional[str] = Field(None, min_length=2, max_length=50)
+    description: Optional[str] = Field(None, min_length=10, max_length=500)
     purchase_price: Optional[float] = Field(None, gt=0)
     sale_price: Optional[float] = Field(None, gt=0)
     net_price: Optional[float] = Field(None, gt=0)

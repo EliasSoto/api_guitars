@@ -10,6 +10,8 @@ from app.schemas.guitar import GuitarListResponse
 def create_guitar(db: Session, guitar: guitar_schema.GuitarCreate):
     db_guitar = Guitar(
         model=guitar.model,
+        brand=guitar.brand,
+        description=guitar.description,
         purchase_price=guitar.purchase_price,
         sale_price=guitar.sale_price,
         net_price=guitar.net_price,
