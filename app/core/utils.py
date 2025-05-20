@@ -1,5 +1,5 @@
 import bcrypt, re
-from datetime import date
+from datetime import date, datetime
 
 # Función para hashear la contraseña
 def hash_password(password: str) -> str:
@@ -25,6 +25,9 @@ def calculate_check_digit(rut: str) -> str:
 
 # Función para validar el RUT completo.
 def validate_rut(rut: str) -> str:
+    if len(rut) < 9 or len(rut) > 10:
+        raise ValueError('El RUT debe tener entre 9 y 10 caracteres y guión "-"')
+    
     # Se eliminan los púntos y se convierte a mayúsculas.
     rut = re.sub(r'\.', '', rut).upper()
     
@@ -55,18 +58,29 @@ def validate_phone_number(phone: str):
     return phone_clean
 
 # Validación de la fecha de nacimiento.
-def validate_birth_date(birth_date: date) -> date:
+def validate_birth_date(birth_date: str) -> str:
+    try:
+        birth_date_obj = datetime.strptime(birth_date, "%Y-%m-%d").date()
+    except ValueError:
+        raise ValueError("Formato de fecha inválido. Usa YYYY-MM-DD.")
+    
     today = date.today()
-    age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+    age = today.year - birth_date_obj.year - ((today.month, today.day) < (birth_date_obj.month, birth_date_obj.day))
     if age < 13 or age > 65:
-        raise ValueError('La edad debe estar entre 13 y 65 años.')
+        raise ValueError("La edad debe estar entre 13 y 65 años.")
+    
     return birth_date
 
-# Validación de la fecha de nacimiento.
-def validate_birth_date_admin(birth_date: date) -> date:
+# Validación de la fecha de nacimiento para administradores.
+def validate_birth_date_admin(birth_date: str) -> str:
+    try:
+        birth_date_obj = datetime.strptime(birth_date, "%Y-%m-%d").date()
+    except ValueError:
+        raise ValueError("Formato de fecha inválido. Usa YYYY-MM-DD.")
+    
     today = date.today()
-    age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+    age = today.year - birth_date_obj.year - ((today.month, today.day) < (birth_date_obj.month, birth_date_obj.day))
     if age < 18 or age > 65:
-        raise ValueError('La edad debe estar entre 18 y 65 años.')
+        raise ValueError("La edad debe estar entre 18 y 65 años.")
+    
     return birth_date
-   

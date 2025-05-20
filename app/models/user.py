@@ -16,7 +16,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     phone = Column(String)
-    birth_date = Column(Date)
+    birth_date = Column(String)
     is_admin = Column(Boolean, default=False)
 
     # Relaciones

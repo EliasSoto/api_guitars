@@ -9,11 +9,11 @@ class UserBase(BaseModel):
     last_name: str = Field(..., min_length=2, max_length=50)
     email: EmailStr
     phone: str = Field(..., min_length=9, max_length=9)
-    birth_date: date = Field(..., description="Fecha de nacimiento en formato YYYY-MM-DD")
+    birth_date: str = Field(..., description="Fecha de nacimiento en formato YYYY-MM-DD")
 
 # Registro normal de usuario. (sin permisos de admin)
 class UserCreate(UserBase):
-    rut: str = Field(..., min_length=8, max_length=12)
+    rut: str = Field(...)
     hashed_password: str = Field(..., min_length=8, max_length=20)  # Contraseña obligatoria.
     
     # Validaciones personalizadas para los campos.
@@ -44,7 +44,7 @@ class UserRead(UserBase):
 
 # Creación de usuario por parte del admin (con permiso para asignar rol)
 class UserCreateByAdmin(UserBase):
-    rut: str = Field(..., min_length=8, max_length=12)
+    rut: str = Field(...)
     hashed_password: str = Field(..., min_length=8, max_length=20)  # Contraseña obligatoria.
     is_admin: bool = False
     
@@ -59,8 +59,8 @@ class UserUpdateByAdmin(BaseModel):
     last_name: Optional[str] = Field(None, min_length=2, max_length=50)
     email: Optional[EmailStr] = None
     phone: Optional[str] = Field(None, min_length=9, max_length=9)
-    birth_date: Optional[date] = None
-    rut: Optional[str] = Field(..., min_length=8, max_length=12)
+    birth_date: Optional[str] = None
+    rut: Optional[str] = Field(...)
     is_admin: Optional[bool] = None
     
     # Validaciones personalizadas para los campos.
