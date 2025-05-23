@@ -34,19 +34,37 @@ def create_users(
 
     return new_user
 
+# OBSOLETO
 #Endpoint para obtener todos los usuarios.
-@router.get("/admin/usuarios", tags=["Usuarios Admin"], response_model=List[user_schema.UserRead])
-def read_all_users(
+#@router.get("/admin/usuarios", tags=["Usuarios Admin"], response_model=List[user_schema.UserRead])
+#def read_all_users(
+#    db: Session = Depends(get_db),
+#    current_user: dict = Depends(verify_token)
+#):
+#    if current_user["role"] != "admin":
+#        raise HTTPException(
+#            status_code=status.HTTP_403_FORBIDDEN,
+#            detail="No tienes permisos para ver los usuarios"
+#        )
+#
+#    return user_repo.get_all_users(db=db)   
+
+# Endpoint para obtener una lista paginada de usuarios por parte de un administrador.
+@router.get("/admin/usuarios", tags=["Usuarios Admin"], response_model=user_schema.UserListResponse)
+def get_paginated_users(
+    page: int = 1,
+    limit: int = 10,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
+    # Se verifica que el usuario logueado sea admin.
     if current_user["role"] != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permisos para ver los usuarios"
         )
-
-    return user_repo.get_all_users(db=db)   
+    
+    return user_repo.get_users_paginated(db=db, page=page, limit=limit)
 
 # Endpoint para obtener un usuario por id.
 @router.get("/admin/usuarios/{user_id}", tags=["Usuarios Admin"], response_model=user_schema.UserRead)

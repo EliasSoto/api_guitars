@@ -3,6 +3,7 @@ from app.models.user import User
 from fastapi import HTTPException, status
 from app.schemas import user as user_schema
 from core.utils import hash_password
+from app.schemas.user import UserListResponse
 
 ### FUNCIONES PARA USUARIOS ADMIN ###
 
@@ -179,3 +180,24 @@ def get_user_by_email(db: Session, email: str):
 #Función que obtiene un usuario por su nombre.
 def get_user_by_nombres(db: Session, first_name: str):
     return db.query(User).filter(User.first_name == first_name).first()
+
+# Función para obtener usuarios paginados.
+def get_users_paginated(db: Session, page: int, limit: int):
+    # Calculamos el offset basado en la página y el límite.
+    offset = (page - 1) * limit
+
+    # Consultamos los usuarios con el offset y el limit.
+    users = db.query(User).offset(offset).limit(limit).all()
+
+    # Consultamos el total de usuarios.
+    total_users = db.query(User).count()
+
+    # Si no se encuentran usuarios, lanzamos una excepción.
+    if not users:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No se encontraron usuarios en esta página."
+        )
+
+    # Devolvemos los usuarios junto con el total.
+    return UserListResponse(users=users, total=total_users)

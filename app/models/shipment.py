@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, Date, Float
+from sqlalchemy import Boolean, Column, Integer, String, Date, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from database.base import Base
 
@@ -12,6 +12,7 @@ class Shipment(Base):
     price = Column(Float)
     shipping_provider = Column(String, index=True)
     is_immediate_delivery = Column(Boolean, default=False)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
     
     # Relaciones
-    order_details = relationship("OrderShipmentDetail", back_populates="shipment")
+    order_details = relationship("ShipmentDetail", back_populates="shipment")

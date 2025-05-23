@@ -4,7 +4,7 @@ from database.base import Base
 from .order import Order
 from .shipment import Shipment
 from .order_detail import OrderDetail
-from .order_shipment_detail import OrderShipmentDetail
+from .shipment_detail import ShipmentDetail
 
 class User(Base):
     __tablename__ = "users"

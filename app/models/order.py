@@ -15,5 +15,5 @@ class Order(Base):
 
     # Relaciones
     user = relationship("User", back_populates="orders")
-    shipment_details = relationship("OrderShipmentDetail", back_populates="order")
+    shipment_details = relationship("ShipmentDetail", back_populates="order")
     order_details = relationship("OrderDetail", back_populates="order")

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, validator, Field
-from typing import Optional
+from typing import Optional, List
 from core.utils import validate_rut, validate_phone_number, validate_birth_date, validate_birth_date_admin
 from datetime import date
 
@@ -73,8 +73,22 @@ class UserUpdateByAdmin(BaseModel):
 
 # Respuesta al frontend para el admin (sin contraseña)
 class UserAdminRead(UserBase):
+    id: int
     rut: str
     is_admin: bool
     
+    class Config:
+        orm_mode = True
+
+# Base para la paginación de usuarios
+class UserPagination(BaseModel):
+    page: int = Field(1, ge=1, description="Número de página a obtener.")
+    limit: int = Field(10, ge=1, le=100, description="Número de usuarios por página.")
+
+# Respuesta paginada para los usuarios
+class UserListResponse(BaseModel):
+    users: List[UserAdminRead]
+    total: int
+
     class Config:
         orm_mode = True

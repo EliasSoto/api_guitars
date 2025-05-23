@@ -35,13 +35,13 @@ def read_order(
     if current_user["role"] != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes permisos para ver esta guitarra"
+            detail="No tienes permisos para ver este pedido"
         )
 
     return order_repo.get_order_by_id(db=db, order_id=order_id)
 
-# Endpoint para actualizar una guitarra por id.
-@router.put("/admin/ordenes/{order_id}", tags=["Pedidos Admin"], response_model=order_schema.OrderRead)
+# Endpoint para actualizar una ordenes por id.
+@router.put("/admin/pedidos/{order_id}", tags=["Pedidos Admin"], response_model=order_schema.OrderRead)
 def update_order(
     order_id: int,
     order: order_schema.OrderUpdate,
@@ -51,13 +51,13 @@ def update_order(
     if current_user["role"] != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes permisos para actualizar guitarras"
+            detail="No tienes permisos para actualizar pedidos"
         )
 
     return order_repo.update_order(db=db, order_id=order_id, order_data=order)
     
 # Endpoint para eliminar una orden por parte de un administrador.
-@router.delete("/admin/ordenes/{order_id}", tags=["Pedidos Admin"])
+@router.delete("/admin/pedidos/{order_id}", tags=["Pedidos Admin"])
 def delete_order(
     order_id: int,
     db: Session = Depends(get_db),
@@ -94,11 +94,11 @@ def create_order(
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
-    # Solo usuarios autenticados pueden crear órdenes
+    # Solo usuarios autenticados pueden crear pedidos
     if current_user["role"] != "user":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Solo los usuarios pueden crear órdenes"
+            detail="Solo los usuarios pueden crear pedidos"
         )
 
     return order_repo.create_order(db=db, user_id=current_user["id"], order=order)

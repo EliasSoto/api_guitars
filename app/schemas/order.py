@@ -4,12 +4,13 @@ from datetime import date
 from app.schemas.guitar import GuitarRead
 from enum import Enum
 
-# Validadores (como los tenías)
+# Validadores
 # ge = greater than or equal
 # le = less than or equal
 # gt = greater than
 # lt = less than
 
+# Enumerado para el estado de pedido
 class OrderStatus(str, Enum):
     pending = "pendiente"
     completed = "completado"
