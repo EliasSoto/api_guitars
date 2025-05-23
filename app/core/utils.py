@@ -62,7 +62,7 @@ def validate_birth_date(birth_date: str) -> str:
     try:
         birth_date_obj = datetime.strptime(birth_date, "%Y-%m-%d").date()
     except ValueError:
-        raise ValueError("Formato de fecha inválido. Usa YYYY-MM-DD.")
+        raise ValueError("Formato de fecha inválido.")
     
     today = date.today()
     age = today.year - birth_date_obj.year - ((today.month, today.day) < (birth_date_obj.month, birth_date_obj.day))
@@ -76,7 +76,7 @@ def validate_birth_date_admin(birth_date: str) -> str:
     try:
         birth_date_obj = datetime.strptime(birth_date, "%Y-%m-%d").date()
     except ValueError:
-        raise ValueError("Formato de fecha inválido. Usa YYYY-MM-DD.")
+        raise ValueError("Formato de fecha inválido.")
     
     today = date.today()
     age = today.year - birth_date_obj.year - ((today.month, today.day) < (birth_date_obj.month, birth_date_obj.day))
