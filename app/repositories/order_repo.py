@@ -11,44 +11,60 @@ from app.models.guitar import Guitar
 # Función para crear una nuevo pedido.
 def create_order(db: Session, user_id: int, order: order_schema.OrderCreate):  
     try:
-        # Verificar si al menos una guitarra es válida
-        valid_guitars = [guitar_id for guitar_id in order.guitar_ids if db.query(Guitar).filter(Guitar.id == guitar_id).first()]
-
-        if not valid_guitars:
+        if not order.items:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="No hay guitarras válidas en el pedido."
+                detail="El pedido debe contener al menos una guitarra con su cantidad."
             )
-            
-        # Crear el pedido
+
+        # Se valida la existencia de las guitarras y el stock.
+        validated_items = []
+        for item in order.items:
+            guitar = db.query(Guitar).filter(Guitar.id == item.guitar_id).first()
+            # Si no se encuentra la guitarra, lanzamos una excepción.
+            if not guitar:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Guitarra con ID {item.guitar_id} no encontrada."
+                )
+            # Si la guitarra no tiene stock suficiente, lanzamos una excepción.
+            if guitar.stock < item.quantity:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"No hay suficiente stock para la guitarra ID {item.guitar_id}."
+                )
+            validated_items.append((guitar, item.quantity))
+
+        # Se crea el pedido en la base de datos.
         db_order = Order(
             user_id=user_id,
             order_date=order.order_date,
             total_price=order.total_price,
             status=order.status,
             payment_method=order.payment_method,
-            quantity=order.quantity,
         )
-
         db.add(db_order)
         db.commit()
         db.refresh(db_order)
 
-        # Verificar y agregar registros en OrderDetail para cada guitarra
-        for guitar_id in order.guitar_ids:
-            # Verificar si la guitarra existe
-            guitar = db.query(Guitar).filter(Guitar.id == guitar_id).first()
-            if guitar:
-                order_detail = OrderDetail(order_id=db_order.id, guitar_id=guitar_id)
-                db.add(order_detail)
-            # Si no existe la guitarra se omite
+        # Se crean los detalles del pedido y se actualiza el stock de las guitarras.
+        for guitar, quantity in validated_items:
+            order_detail = OrderDetail(
+                order_id=db_order.id,
+                guitar_id=guitar.id,
+                quantity=quantity
+            )
+            db.add(order_detail)
+            guitar.stock -= quantity
 
-        db.commit()  # Confirmar los detalles
-
-        # Refrescar el pedido con relaciones
+        db.commit()
         db.refresh(db_order)
         return db_order
 
+    # Manejo de excepciones para errores específicos.
+    except HTTPException:
+        db.rollback()
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(

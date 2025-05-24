@@ -10,7 +10,6 @@ class Order(Base):
     total_price = Column(Float)
     status = Column(String, index=True)
     payment_method = Column(String)
-    quantity = Column(Integer)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
 
     # Relaciones

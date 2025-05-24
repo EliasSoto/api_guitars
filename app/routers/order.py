@@ -59,21 +59,6 @@ def delete_order_by_id(
     return order_repo.delete_order(db=db, order_id=order_id)
 
 ### ENDPOINTS DE USUARIOS NORMALES ###
-
-# Endpoint para obtener pedidos del usuario autenticado.
-@router.get("/usuarios/pedidos", tags=["Pedidos Usuario"], response_model=List[order_schema.OrderRead])
-def read_user_orders(
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(verify_token)
-):
-    orders = order_repo.get_all_orders(db=db, user_id=current_user["id"])
-    if not orders:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No tienes pedidos registrados"
-        )
-    return orders
-
 # Endpoint para generar un pedido.
 @router.post("/usuarios/pedidos", tags=["Pedidos Usuario"], response_model=order_schema.OrderRead)
 def create_order(
@@ -89,3 +74,19 @@ def create_order(
         )
 
     return order_repo.create_order(db=db, user_id=current_user["id"], order=order)
+
+# Endpoint para obtener pedidos paginados del usuario autenticado
+@router.get("/usuarios/pedidos/", tags=["Pedidos Usuario"], response_model=order_schema.OrderListResponse)
+def get_user_orders_paginated(
+    page: int = 1,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    if current_user["role"] != "user":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los usuarios pueden consultar sus pedidos"
+        )
+
+    return order_repo.get_orders_paginated(db=db, page=page, limit=limit, user_id=current_user["id"])

@@ -23,12 +23,15 @@ class OrderBase(BaseModel):
     total_price: float = Field(..., gt=0)
     status:OrderStatus = Field(..., description="Estado del pedido.")
     payment_method: str = Field(..., min_length=2, max_length=50)
-    quantity: int = Field(..., ge=1)
-    guitar_ids: List[int] = Field(..., description="Lista de IDs de guitarras en el pedido.")
-
+    
+# Objeto para crear un una guitarra con cantidad
+class OrderItem(BaseModel):
+    guitar_id: int
+    quantity: int = Field(..., gt=0)
+    
 # Para crear pedido
 class OrderCreate(OrderBase):
-    pass 
+    items: List[OrderItem] = Field(..., description="Lista de guitarras con cantidad para el pedido.")
 
 # Para actualizar pedido
 class OrderUpdate(BaseModel):
@@ -36,11 +39,11 @@ class OrderUpdate(BaseModel):
     total_price: Optional[float] = Field(None, gt=0)
     status: Optional[OrderStatus] = Field(None, description="Estado del pedido.")
     payment_method: Optional[str] = Field(None, min_length=2, max_length=50)
-    quantity: Optional[int] = Field(None, ge=1)
 
 # Schema para la relación OrderDetail
 class OrderDetailResponse(BaseModel):
     guitar: GuitarRead
+    quantity: int
     
     class Config:
         orm_mode = True
@@ -49,7 +52,6 @@ class OrderDetailResponse(BaseModel):
 class OrderRead(OrderBase):
     id: int
     user_id: int
-    guitar_ids: List[int] = []
     order_details: List[OrderDetailResponse] = []
 
     class Config:
