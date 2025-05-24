@@ -28,38 +28,9 @@ def create_guitar(
 
     return new_guitar
 
-#Endpoint para obtener todas las guitarras.
-@router.get("/admin/guitarras", tags=["Guitarras Admin"], response_model=List[guitar_schema.GuitarRead])
-def read_all_guitars(
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(verify_token)
-):
-    if current_user["role"] != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes permisos para ver las guitarras"
-        )
-
-    return guitar_repo.get_all_guitar(db=db)   
-
-# Endpoint para obtener una guitarra por id.
-@router.get("/admin/guitarras/{guitar_id}", tags=["Guitarras Admin"], response_model=guitar_schema.GuitarRead)
-def read_guitar(
-    guitar_id: int,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(verify_token)
-):
-    if current_user["role"] != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes permisos para ver esta guitarra"
-        )
-
-    return guitar_repo.get_guitar_by_id(db=db, guitar_id=guitar_id)
-
 # Endpoint para actualizar una guitarra por id.
 @router.put("/admin/guitarras/{guitar_id}", tags=["Guitarras Admin"], response_model=guitar_schema.GuitarRead)
-def update_guitar(
+def update_guitar_by_id(
     guitar_id: int,
     guitar: guitar_schema.GuitarUpdate,
     db: Session = Depends(get_db),
@@ -76,7 +47,7 @@ def update_guitar(
 
 # Endpoint para eliminar una guitarra por parte de un administrador.
 @router.delete("/admin/guitarras/{guitar_id}", tags=["Guitarras Admin"])
-def delete_guitar(
+def delete_guitar_by_id(
     guitar_id: int,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
@@ -93,7 +64,7 @@ def delete_guitar(
 
 # Endpoint para obtener una guitarra por id. (Endpoint público)
 @router.get("/guitarras/{guitar_id}", tags=["Guitarras Públicas"], response_model=guitar_schema.GuitarRead)
-def get_guitar_by_id(
+def read_guitar_by_id(
     guitar_id: int,
     db: Session = Depends(get_db)
 ):

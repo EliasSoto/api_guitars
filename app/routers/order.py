@@ -11,23 +11,10 @@ router = APIRouter()
 
 ### ENDPOINTS PARA ADMINISTRADORES DE PEDIDOS ###
 
-#Endpoint para obtener todos los pedidos.
-@router.get("/admin/pedidos", tags=["Pedidos Admin"], response_model=List[order_schema.OrderRead])
-def read_all_orders(
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(verify_token)
-):
-    if current_user["role"] != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes permisos para ver las ordenes"
-        )
-
-    return order_repo.get_all_orders(db=db)
 
 # Endpoint para obtener un pedido por id.
 @router.get("/admin/pedidos/{order_id}", tags=["Pedidos Admin"], response_model=order_schema.OrderRead)
-def read_order(
+def read_order_by_id(
     order_id: int,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
@@ -42,7 +29,7 @@ def read_order(
 
 # Endpoint para actualizar una ordenes por id.
 @router.put("/admin/pedidos/{order_id}", tags=["Pedidos Admin"], response_model=order_schema.OrderRead)
-def update_order(
+def update_order_by_id(
     order_id: int,
     order: order_schema.OrderUpdate,
     db: Session = Depends(get_db),
@@ -58,7 +45,7 @@ def update_order(
     
 # Endpoint para eliminar una orden por parte de un administrador.
 @router.delete("/admin/pedidos/{order_id}", tags=["Pedidos Admin"])
-def delete_order(
+def delete_order_by_id(
     order_id: int,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)

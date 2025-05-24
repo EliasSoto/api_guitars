@@ -14,7 +14,7 @@ router = APIRouter()
 
 # Endpoint para obtener un envio por id.
 @router.get("/admin/envios/{shipment_id}", tags=["Envíos Admin"], response_model=shipment_schema.ShipmentRead)
-def read_shipment(
+def read_shipment_by_id(
     shipment_id: int,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
@@ -29,7 +29,7 @@ def read_shipment(
 
 # Endpoint para actualizar un envio por id.
 @router.put("/admin/envios/{shipment_id}", tags=["Envíos Admin"], response_model=shipment_schema.ShipmentRead)
-def update_shipment(
+def update_shipment_by_id(
     shipment_id: int,
     shipment: shipment_schema.ShipmentUpdate,
     db: Session = Depends(get_db),
@@ -45,7 +45,7 @@ def update_shipment(
     
 # Endpoint para eliminar un pedido por parte de un administrador.
 @router.delete("/admin/envios/{shipment_id}", tags=["Envíos Admin"])
-def delete_shipment(
+def delete_shipment_by_id(
     shipment_id: int,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)

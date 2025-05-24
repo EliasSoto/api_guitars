@@ -19,7 +19,7 @@ def read_root():
 
 # Endpoint para crear un nuevo usuario por parte de un administrador.
 @router.post("/admin/usuarios", tags=["Usuarios Admin"], response_model=user_schema.UserRead)
-def create_users(
+def create_user(
     user: user_schema.UserCreateByAdmin,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
@@ -33,21 +33,6 @@ def create_users(
     new_user = user_repo.create_user_by_admin(db=db, user=user)
 
     return new_user
-
-# OBSOLETO
-#Endpoint para obtener todos los usuarios.
-#@router.get("/admin/usuarios", tags=["Usuarios Admin"], response_model=List[user_schema.UserRead])
-#def read_all_users(
-#    db: Session = Depends(get_db),
-#    current_user: dict = Depends(verify_token)
-#):
-#    if current_user["role"] != "admin":
-#        raise HTTPException(
-#            status_code=status.HTTP_403_FORBIDDEN,
-#            detail="No tienes permisos para ver los usuarios"
-#        )
-#
-#    return user_repo.get_all_users(db=db)   
 
 # Endpoint para obtener una lista paginada de usuarios por parte de un administrador.
 @router.get("/admin/usuarios", tags=["Usuarios Admin"], response_model=user_schema.UserListResponse)
@@ -68,7 +53,7 @@ def get_paginated_users(
 
 # Endpoint para obtener un usuario por id.
 @router.get("/admin/usuarios/{user_id}", tags=["Usuarios Admin"], response_model=user_schema.UserRead)
-def read_user(
+def read_user_by_id(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
@@ -93,7 +78,7 @@ def read_user(
 
 # Endpoint para actualizar un usuario por id.
 @router.put("/admin/usuarios/{user_id}", tags=["Usuarios Admin"], response_model=user_schema.UserAdminRead)
-def update_user(
+def update_user_by_id(
     user_id: int,
     user: user_schema.UserUpdateByAdmin,
     db: Session = Depends(get_db),
@@ -136,7 +121,7 @@ def update_user(
 
 # Endpoint para eliminar un usuario por parte de un administrador.
 @router.delete("/admin/usuarios/{user_id}", tags=["Usuarios Admin"])
-def delete_user(
+def delete_user_by_id(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
@@ -179,7 +164,7 @@ def delete_user(
 
 # Endpoint para registrar un nuevo usuario normal. (Endpoint Público).
 @router.post("/usuarios", tags=["Usuarios Normales"], response_model=user_schema.UserRead)
-def create_normal_user(
+def register_normal_user(
     user: user_schema.UserCreate,
     db: Session = Depends(get_db),
     current_user: Optional[dict] = Depends(verify_token_optional)  

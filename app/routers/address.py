@@ -43,6 +43,13 @@ def create_address(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Usuario no encontrado"
         )
+        
+    # Se verifica que el administrador no pueda crear una dirección.
+    if current_user["role"] == "admin":
+       raise HTTPException(
+           status_code=status.HTTP_403_FORBIDDEN,
+           detail="Los administradores no pueden crear direcciones"
+       )
 
     # Se intenta crear la dirección.
     try:
@@ -53,26 +60,10 @@ def create_address(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al ingresar la dirección actual: {str(e)}"
         )
-
-# Endpoint para obtener todas las direcciones del usuario autenticado
-@router.get("/direcciones", tags=["Direcciones Usuarios"], response_model=list[address_schema.AddressRead])
-def read_all_addresses(
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(verify_token)
-):
-    addresses = address_repo.get_all_addresses(db=db, user_id=current_user["id"])
-
-    if not addresses:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No tienes direcciones registradas"
-        )
-
-    return addresses
-
+        
 # Endpoint para actualizar una dirección específica del usuario autenticado
 @router.put("/direcciones/{address_id}", tags=["Direcciones Usuarios"], response_model=address_schema.AddressRead)
-def update_user_address(
+def update_user_address_by_id(
     address_id: int,
     address: address_schema.AddressUpdate,
     db: Session = Depends(get_db),
@@ -106,7 +97,7 @@ def update_user_address(
 
 # Endpoint para eliminar una dirección específica del usuario autenticado
 @router.delete("/direcciones/{address_id}", tags=["Direcciones Usuarios"])
-def delete_user_address(
+def delete_user_address_by_id(
     address_id: int,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
@@ -134,6 +125,25 @@ def delete_user_address(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al eliminar la dirección: {str(e)}"
         )
+        
+        
+### ENDPOINTS PARA EL USUARIO AUTENTICADO ###
+        
+# Endpoint para obtener todas las direcciones del usuario autenticado
+@router.get("/direcciones", tags=["Direcciones Usuarios"], response_model=list[address_schema.AddressRead])
+def read_all_addresses(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    addresses = address_repo.get_all_addresses(db=db, user_id=current_user["id"])
+
+    if not addresses:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No tienes direcciones registradas"
+        )
+
+    return addresses
 
 # Endpoint para obtener la dirección activa del usuario autenticado
 @router.get("/direcciones/activa", tags=["Direcciones Usuarios"], response_model=address_schema.AddressRead)
