@@ -8,14 +8,20 @@ from app.schemas.guitar import GuitarListResponse
 
 # Función para crear una nueva guitarra.
 def create_guitar(db: Session, guitar: guitar_schema.GuitarCreate):
+    # Se calcula con el precio liquidación si existe, sino se calcula con el precio venta
+    base_price = guitar.liquidation_price if guitar.liquidation_price is not None else guitar.sale_price
+    
+    net_price = int(round(base_price / 1.19, 0))
+    iva = int(round(base_price - net_price, 0))
+    
     db_guitar = Guitar(
         model=guitar.model,
         brand=guitar.brand,
         description=guitar.description,
         purchase_price=guitar.purchase_price,
         sale_price=guitar.sale_price,
-        net_price=guitar.net_price,
-        iva=guitar.iva,
+        net_price=net_price,
+        iva=iva,
         liquidation_price=guitar.liquidation_price,
         purchase_date=guitar.purchase_date,
         wood_type=guitar.wood_type,

@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator, root_validator
 from typing import Optional, List
 from datetime import date
+from utils.guitar_validators import (validate_sale_price, validate_liquidation_price, validate_purchase_date)
 
 # Que significa cada uno de los validadores
 # ge = greater than or equal
@@ -15,20 +16,18 @@ class GuitarBase(BaseModel):
     description: str = Field(..., min_length=10, max_length=500)
     purchase_price: float = Field(..., gt=0)
     sale_price: float = Field(..., gt=0)
-    net_price: float = Field(..., gt=0)
-    iva: float = Field(..., gt=0)
-    liquidation_price: float = Field(..., gt=0)
     purchase_date: date
     wood_type: str = Field(..., min_length=2, max_length=50)
     image_link: Optional[str] = None
     color: str = Field(..., min_length=2, max_length=30)
-    stock: int = Field(..., ge=0)
+    stock: int = Field(..., gt=0)
     is_custom: bool = False
     fret_count: int = Field(..., ge=21, le=24)
 
 # Para crear una guitarra
 class GuitarCreate(GuitarBase):
-    pass 
+    _validate_sale_price = validator("sale_price", allow_reuse=True)(validate_sale_price)
+    _validate_purchase_date = validator("purchase_date", allow_reuse=True)(validate_purchase_date)
 
 # Para actualizar una guitarra
 class GuitarUpdate(BaseModel):
@@ -37,8 +36,6 @@ class GuitarUpdate(BaseModel):
     description: Optional[str] = Field(None, min_length=10, max_length=500)
     purchase_price: Optional[float] = Field(None, gt=0)
     sale_price: Optional[float] = Field(None, gt=0)
-    net_price: Optional[float] = Field(None, gt=0)
-    iva: Optional[float] = Field(None, ge=0, le=1)
     liquidation_price: Optional[float] = Field(None, gt=0)
     purchase_date: Optional[date] = None
     wood_type: Optional[str] = Field(None, min_length=2, max_length=50)
@@ -47,6 +44,10 @@ class GuitarUpdate(BaseModel):
     stock: Optional[int] = Field(None, ge=0)
     is_custom: Optional[bool] = None
     fret_count: Optional[int] = Field(None, ge=1)
+    
+    _validate_sale_price = validator("sale_price", allow_reuse=True)(validate_sale_price)
+    _validate_liquidation = validator("liquidation_price", allow_reuse=True)(validate_liquidation_price)
+    _validate_purchase_date = validator("purchase_date", allow_reuse=True)(validate_purchase_date)
 
 # Para mostrar una guitarra
 class GuitarRead(GuitarBase):
