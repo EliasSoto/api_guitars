@@ -150,3 +150,23 @@ def get_all_addresses_by_user_id(db: Session, user_id: int):
         )
 
     return addresses
+
+# Función para activar una dirección específica por id.
+def activate_address(db: Session, user_id: int, address_id: int):
+    # Se busca la dirección que se quiere activar
+    address = db.query(Address).filter_by(id=address_id, user_id=user_id).first()
+    if not address:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Dirección no encontrada o no te pertenece"
+        )
+
+    # Se desactiva todas las direcciones del usuario
+    db.query(Address).filter_by(user_id=user_id).update({"is_active": False})
+
+    # Se activa la dirección específica
+    address.is_active = True
+    db.commit()
+    db.refresh(address)
+
+    return address

@@ -1,14 +1,15 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field, validator
+from typing import Optional, List
+from enum import Enum
 
 # Base común para reutilizar
 class AddressBase(BaseModel):
-    street_name: str
-    region: str
-    commune: str
-    directions: Optional[str] = None
-    address_type: str
-    is_active: Optional[bool] = True
+    street_name: str = Field(..., min_length=2, max_length=100, description="Nombre de la calle y número")
+    region: str = Field(..., min_length=2, max_length=50, description="Región")
+    commune: str = Field(..., min_length=2, max_length=50, description="Comuna")
+    directions: Optional[str] = Field(None, max_length=200, description="Indicaciones adicionales")
+    address_type: str = Field(..., min_length=2, max_length=50, description="Tipo de dirección")
+    is_active: bool = Field(True, description="Indica si es la dirección activa")
 
 # Para crear dirección
 class AddressCreate(AddressBase):
@@ -24,9 +25,9 @@ class AddressRead(AddressBase):
 
 # Para actualizar dirección
 class AddressUpdate(AddressBase):
-    street_name: Optional[str] = None
-    region: Optional[str] = None
-    commune: Optional[str] = None
-    directions: Optional[Optional[str]] = None
-    address_type: Optional[str] = None
-    is_active: Optional[bool] = None
+    street_name: Optional[str] = Field(None, min_length=2, max_length=100)
+    region: Optional[str] = Field(None, min_length=2, max_length=50)
+    commune: Optional[str] = Field(None, min_length=2, max_length=50)
+    directions: Optional[str] = Field(None, max_length=200)
+    address_type: Optional[str] = Field(None, min_length=2, max_length=50)
+    is_active: Optional[bool] = Field(None, description="Al activar, desactiva las demás")

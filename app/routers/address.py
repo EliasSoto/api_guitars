@@ -79,13 +79,13 @@ def update_user_address_by_id(
 
     # Se intenta actualizar la dirección.
     try:
-        updated_adress = address_repo.update_address(
+        updated_address = address_repo.update_address(
             db=db,
             user_id=db_user.id,
             address_id=address_id,
             address_data=address
         )
-        return updated_adress
+        return updated_address
     
     except HTTPException as e:
         raise e
@@ -166,3 +166,34 @@ def get_active_address(
         )
 
     return active_address
+
+# Endpoint para activar una dirección por id del usuario autenticado
+@router.put("/direcciones/{address_id}/activar", tags=["Direcciones Usuarios"], response_model=address_schema.AddressRead)
+def activate_user_address_by_id(
+    address_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    # Se obtiene el usuario autenticado.
+    db_user = user_repo.get_user_by_id(db=db, user_id=current_user["id"])
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    try:
+        # Se intenta activar la dirección.
+        activated_address = address_repo.activate_address(
+            db=db,
+            user_id=db_user.id,
+            address_id=address_id
+        )
+        return activated_address
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al activar la dirección: {str(e)}"
+        )
