@@ -139,11 +139,13 @@ def update_normal_user(db: Session, user_id: str, user: user_schema.UserUpdate, 
         )
         
     # Se verifica si el correo ya está registrado por otro usuario.
-    if db.query(User).filter(User.email == user.email).first():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El correo ya está registrado"
-        )
+    if user.email and user.email != db_user.email:
+        existing_email = db.query(User).filter(User.email == user.email).first()
+        if existing_email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=["El correo ya está registrado por otro usuario."]
+            )
 
     # Se actualizan los campos del usuario.
     if user.first_name is not None:

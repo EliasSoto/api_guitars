@@ -62,7 +62,7 @@ def delete_shipment_by_id(
 
 # Endpoint para obtener envios del usuario autenticado.
 @router.get("/usuarios/envios", tags=["Envíos Usuario"], response_model=shipment_schema.ShipmentListResponse)
-def read_user_shipments(
+def get_user_shipments_paginated(
     page: int = 1,
     limit: int = 10,
     db: Session = Depends(get_db),
