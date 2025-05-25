@@ -20,7 +20,7 @@ class GuitarBase(BaseModel):
     wood_type: str = Field(..., min_length=2, max_length=50)
     image_link: Optional[str] = None
     color: str = Field(..., min_length=2, max_length=30)
-    stock: int = Field(..., gt=0)
+    stock: int = Field(..., ge=0)
     is_custom: bool = False
     fret_count: int = Field(..., ge=21, le=24)
 
@@ -43,7 +43,7 @@ class GuitarUpdate(BaseModel):
     color: Optional[str] = Field(None, min_length=2, max_length=30)
     stock: Optional[int] = Field(None, ge=0)
     is_custom: Optional[bool] = None
-    fret_count: Optional[int] = Field(None, ge=1)
+    fret_count: int = Field(..., ge=21, le=24)
     
     _validate_sale_price = validator("sale_price", allow_reuse=True)(validate_sale_price)
     _validate_liquidation = validator("liquidation_price", allow_reuse=True)(validate_liquidation_price)

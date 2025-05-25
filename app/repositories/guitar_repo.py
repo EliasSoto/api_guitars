@@ -8,11 +8,8 @@ from app.schemas.guitar import GuitarListResponse
 
 # Función para crear una nueva guitarra.
 def create_guitar(db: Session, guitar: guitar_schema.GuitarCreate):
-    # Se calcula con el precio liquidación si existe, sino se calcula con el precio venta
-    base_price = guitar.liquidation_price if guitar.liquidation_price is not None else guitar.sale_price
-    
-    net_price = int(round(base_price / 1.19, 0))
-    iva = int(round(base_price - net_price, 0))
+    net_price = int(round(guitar.sale_price / 1.19, 0))
+    iva = int(round(guitar.sale_price - net_price, 0))
     
     db_guitar = Guitar(
         model=guitar.model,
@@ -22,7 +19,6 @@ def create_guitar(db: Session, guitar: guitar_schema.GuitarCreate):
         sale_price=guitar.sale_price,
         net_price=net_price,
         iva=iva,
-        liquidation_price=guitar.liquidation_price,
         purchase_date=guitar.purchase_date,
         wood_type=guitar.wood_type,
         image_link=guitar.image_link,
@@ -56,6 +52,14 @@ def update_guitar(db: Session, guitar_id: int, guitar_data: guitar_schema.Guitar
     # Actualizamos todos los campos proporcionados en guitar_data
     for key, value in update_data.items():
         setattr(db_guitar, key, value)
+        
+    # Se recalcula net_price e iva si hay un sale_price o liquidation_price
+    price_base = update_data.get("liquidation_price") or update_data.get("sale_price")
+    if price_base:
+        net_price = int(round(price_base / 1.19, 0))
+        iva = int(round(price_base - net_price, 0))
+        db_guitar.net_price = net_price
+        db_guitar.iva = iva
 
     # Se guardan los datos en la base de datos.
     db.commit()
