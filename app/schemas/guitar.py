@@ -52,7 +52,7 @@ class GuitarUpdate(BaseModel):
 # Para mostrar una guitarra
 class GuitarRead(GuitarBase):
     id: int
-    liquidation_price: float
+    liquidation_price: Optional[float] = None
 
     class Config:
         orm_mode = True
