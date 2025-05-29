@@ -143,6 +143,24 @@ def get_user_shipments_paginated(db: Session, user_id: int, page: int, limit: in
         total=total
     )
 
+# Función para obtener todos los envíos paginados (para administradores).
+def get_all_shipments_paginated(db: Session, page: int, limit: int):
+    offset = (page - 1) * limit
+
+    # Consulta base sin filtrar por usuario
+    query = db.query(Shipment).join(ShipmentDetail).join(Order)
+
+    # Obtener los envíos paginados
+    shipments = query.offset(offset).limit(limit).all()
+
+    # Contar el total
+    total = query.count()
+
+    return ShipmentListResponse(
+        shipments=shipments,
+        total=total
+    )
+
 # Función para actualizar el estado de un envío.
 def update_shipment_status(db: Session, shipment_id: int, new_status: str):
     db_shipment = db.query(Shipment).filter(Shipment.id == shipment_id).first()

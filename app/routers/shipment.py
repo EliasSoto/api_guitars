@@ -12,6 +12,30 @@ router = APIRouter()
 
 ### ENDPOINTS PARA ADMINISTRADORES DE ENVIO ###
 
+# Endpoint para que el admin obtenga todos los envíos paginados
+@router.get("/admin/envios", tags=["Envíos Admin"], response_model=shipment_schema.ShipmentListResponse)
+def get_all_shipments_paginated(
+    page: int = 1,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para ver los envíos"
+        )
+
+    response = shipment_repo.get_all_shipments_paginated(db=db, page=page, limit=limit)
+
+    if not response.shipments or response.total == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No hay envíos registrados"
+        )
+
+    return response
+
 # Endpoint para obtener un envio por id.
 @router.get("/admin/envios/{shipment_id}", tags=["Envíos Admin"], response_model=shipment_schema.ShipmentRead)
 def read_shipment_by_id(
