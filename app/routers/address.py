@@ -197,3 +197,28 @@ def activate_user_address_by_id(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al activar la dirección: {str(e)}"
         )
+
+# Endpoint para obtener una dirección específica por ID del usuario autenticado
+@router.get("/direcciones/{address_id}", tags=["Direcciones Usuarios"], response_model=address_schema.AddressRead)
+def read_user_address_by_id(
+    address_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    # Verificar que el usuario exista
+    db_user = user_repo.get_user_by_id(db=db, user_id=current_user["id"])
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    # Intentar obtener la dirección por ID y validar que pertenezca al usuario
+    address = address_repo.get_address_by_id(db=db, address_id=address_id)
+    if not address or address.user_id != db_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Dirección no encontrada o no te pertenece"
+        )
+
+    return address

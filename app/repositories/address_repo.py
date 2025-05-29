@@ -170,3 +170,7 @@ def activate_address(db: Session, user_id: int, address_id: int):
     db.refresh(address)
 
     return address
+
+# Función para obtener una dirección específica por id.
+def get_address_by_id(db: Session, address_id: int):
+    return db.query(Address).filter(Address.id == address_id).first()
