@@ -92,23 +92,11 @@ def create_shipment(
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
-    # Solo usuarios autenticados pueden crear envios
     if current_user["role"] != "user":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Solo los usuarios pueden crear envios"
-        )
-    
-    # Verificar si el pedido existe y pertenece al usuario
-    db_order = db.query(Order).filter(
-        Order.id == shipment.order_id,
-        Order.user_id == current_user["id"]  # ¡Seguridad importante!
-    ).first()
-    # Si no existe el pedido o no pertenece al usuario, lanza un error
-    if not db_order:
-        raise HTTPException(
-            status_code=404, 
-            detail="Pedido no encontrado o no autorizado"
+            detail="Solo los usuarios pueden crear envíos"
         )
 
-    return shipment_repo.create_shipment(db=db, order_id=shipment.order_id, shipment_data=shipment.dict())
+    return shipment_repo.create_shipment( db=db, order_ids=shipment.order_ids, user_id=current_user["id"], shipment_data=shipment.dict(exclude={"order_ids"} )
+    )

@@ -25,10 +25,17 @@ class ShipmentBase(BaseModel):
     price: float = Field(..., gt=0, description="Costo del envío.")
     shipping_provider: str = Field(..., min_length=2, max_length=100, description="Proveedor del envío.")
     is_immediate_delivery: bool = Field(default=False, description="Indica si es inmediato.")
+    
+# Objeto para crear un envío con relación a pedidos
+class ShipmentItem(BaseModel):
+    order_id: int
+    
+    class Config:
+        orm_mode = True
 
 # Para crear un envío
 class ShipmentCreate(ShipmentBase):
-    order_id: int = Field(..., gt=0, description="ID del pedido asociado.")
+    order_ids: List[int] = Field(..., min_items=1, description="IDs de los pedidos asociados.")
 
 # Para actualizar un envío
 class ShipmentUpdate(BaseModel):
@@ -41,7 +48,7 @@ class ShipmentUpdate(BaseModel):
 
 # Schema para la relación ShipmentDetail
 class ShipmentDetailResponse(BaseModel):
-    tracking_number_id: int
+    shipment_id: int
     order_id: int
     
     class Config:
@@ -50,16 +57,7 @@ class ShipmentDetailResponse(BaseModel):
 # Para mostrar un envío
 class ShipmentRead(ShipmentBase):
     id: int
-    order_details: List[ShipmentDetailResponse] = []
-    
-    class Config:
-        orm_mode = True
-
-# Para mostrar información de envío en la respuesta de pedido
-class OrderShipmentInfo(BaseModel):
-    id: int
-    tracking_status: TrackingStatus
-    delivery_date: Optional[date]
+    shipment_details: List[ShipmentDetailResponse] = []
     
     class Config:
         orm_mode = True

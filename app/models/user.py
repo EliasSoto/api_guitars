@@ -22,3 +22,4 @@ class User(Base):
     # Relaciones
     addresses = relationship("Address", back_populates="user")
     orders = relationship("Order", back_populates="user")
+    shipments = relationship("Shipment", back_populates="user")

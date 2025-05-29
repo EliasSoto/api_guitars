@@ -5,9 +5,11 @@ from database.base import Base
 class ShipmentDetail(Base):
     __tablename__ = "shipment_details"
 
-    tracking_number_id = Column(Integer, ForeignKey("shipments.id"), primary_key=True)
+    shipment_id = Column(Integer, ForeignKey("shipments.id"), primary_key=True)
     order_id = Column(Integer, ForeignKey("orders.id"), primary_key=True)
 
     # Relaciones
     order = relationship("Order", back_populates="shipment_details")
-    shipment = relationship("Shipment", back_populates="order_details")
+    shipment = relationship("Shipment", back_populates="shipment_details")
+
+    

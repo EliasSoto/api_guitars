@@ -9,35 +9,39 @@ from typing import Optional
 ### FUNCIONES PARA GESTIÓN DE ENVÍOS ###
 
 # Función para crear un nuevo envío.
-def create_shipment(db: Session, order_id: int, shipment_data: dict):
+def create_shipment(db: Session, order_ids: list[int], user_id: int, shipment_data: dict):
     try:
-        # Verifica si el pedido existe
-        db_order = db.query(Order).filter(Order.id == order_id).first()
-        if not db_order:
-            raise HTTPException(status_code=404, detail="Pedido no encontrado")
+        # Verificar que todos los pedidos existan
+        orders = db.query(Order).filter(Order.id.in_(order_ids)).all()
+        if len(orders) != len(order_ids):
+            raise HTTPException(
+                status_code=404,
+                detail="Uno o más pedidos no fueron encontrados"
+            )
 
-        # Crea el envío (usa shipment_data["campo"] para acceder a los valores)
+        # Crear el envío
         db_shipment = Shipment(
-            shipment_date=shipment_data["shipment_date"],  # Acceso como dict
+            shipment_date=shipment_data["shipment_date"],
             tracking_status=shipment_data["tracking_status"],
-            delivery_date=shipment_data.get("delivery_date"),  # Usa .get() para campos opcionales
+            delivery_date=shipment_data.get("delivery_date"),
             price=shipment_data["price"],
             shipping_provider=shipment_data["shipping_provider"],
             is_immediate_delivery=shipment_data["is_immediate_delivery"],
-            order_id=order_id
+            user_id=user_id
         )
         db.add(db_shipment)
+        db.flush()
+
+        # Crear detalles de envío para cada pedido
+        for order_id in order_ids:
+            shipment_detail = ShipmentDetail(
+                shipment_id=db_shipment.id,
+                order_id=order_id
+            )
+            db.add(shipment_detail)
+
         db.commit()
         db.refresh(db_shipment)
-
-        # Crea la relación con el pedido
-        shipment_detail = ShipmentDetail(
-            tracking_number_id=db_shipment.id,
-            order_id=order_id
-        )
-        
-        db.add(shipment_detail)
-        db.commit()
 
         return db_shipment
 
@@ -75,7 +79,7 @@ def get_shipment_by_order_id(db: Session, order_id: int):
     
     # Obtener la información completa del envío
     db_shipment = db.query(Shipment).filter(
-        Shipment.id == shipment_detail.tracking_number_id
+        Shipment.id == shipment_detail.shipment_id
     ).first()
     
     return db_shipment
@@ -110,7 +114,7 @@ def delete_shipment(db: Session, shipment_id: int):
 
     # Primero eliminamos los detalles de envío asociados
     db.query(ShipmentDetail).filter(
-        ShipmentDetail.tracking_number_id == shipment_id
+        ShipmentDetail.shipment_id == shipment_id
     ).delete()
 
     # Luego eliminamos el envío
