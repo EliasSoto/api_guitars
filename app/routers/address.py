@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 router = APIRouter()
 
 # Endpoint para obtener todas las direcciones del usuario por id
-@router.get("/admin/direcciones", tags=["Direcciones Admin"], response_model=list[address_schema.AddressRead])
+@router.get("/admin/direcciones/{user_id}", tags=["Direcciones Admin"], response_model=list[address_schema.AddressRead])
 def read_all_addresses_by_user_id(
     user_id: int,
     db: Session = Depends(get_db),
