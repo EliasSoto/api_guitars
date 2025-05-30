@@ -19,6 +19,7 @@ def create_order(db: Session, user_id: int, order: order_schema.OrderCreate):
 
         # Se valida la existencia de las guitarras y el stock.
         validated_items = []
+        total_price = 0
         for item in order.items:
             guitar = db.query(Guitar).filter(Guitar.id == item.guitar_id).first()
             # Si no se encuentra la guitarra, lanzamos una excepción.
@@ -34,12 +35,22 @@ def create_order(db: Session, user_id: int, order: order_schema.OrderCreate):
                     detail=f"No hay suficiente stock para la guitarra ID {item.guitar_id}."
                 )
             validated_items.append((guitar, item.quantity))
+            
+            # Se calcula el precio total del pedido
+            if guitar.liquidation_price:
+                # Si hay un precio de liquidación, se usa ese precio
+                price_to_use = guitar.liquidation_price
+            else:
+                # Si no hay precio de liquidación, se usa el precio de venta
+                price_to_use = guitar.sale_price
+
+            total_price += price_to_use * item.quantity
 
         # Se crea el pedido en la base de datos.
         db_order = Order(
             user_id=user_id,
             order_date=order.order_date,
-            total_price=order.total_price,
+            total_price=total_price,
             status=order.status,
             payment_method=order.payment_method,
         )
