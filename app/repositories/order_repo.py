@@ -5,6 +5,7 @@ from app.schemas import order as order_schema
 from app.schemas.order import OrderListResponse
 from app.models.order_detail import OrderDetail
 from app.models.guitar import Guitar
+from datetime import date
 
 ### FUNCIONES PARA USUARIOS ADMIN ###
 
@@ -49,7 +50,7 @@ def create_order(db: Session, user_id: int, order: order_schema.OrderCreate):
         # Se crea el pedido en la base de datos.
         db_order = Order(
             user_id=user_id,
-            order_date=order.order_date,
+            order_date=date.today(),
             total_price=total_price,
             status=order.status,
             payment_method=order.payment_method,

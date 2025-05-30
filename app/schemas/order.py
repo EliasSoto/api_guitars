@@ -19,7 +19,6 @@ class OrderStatus(str, Enum):
 
 # Base común para pedidos
 class OrderBase(BaseModel):
-    order_date: date
     status:OrderStatus = Field(..., description="Estado del pedido.")
     payment_method: str = Field(..., min_length=2, max_length=50)
     
@@ -51,6 +50,7 @@ class OrderDetailResponse(BaseModel):
 class OrderRead(OrderBase):
     id: int
     user_id: int
+    order_date: date = Field(..., description="Fecha del pedido.")
     total_price: float = Field(..., gt=0, description="Precio total del pedido.")
     order_details: List[OrderDetailResponse] = []
 
