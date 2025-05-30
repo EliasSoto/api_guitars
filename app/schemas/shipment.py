@@ -57,6 +57,7 @@ class ShipmentDetailResponse(BaseModel):
 # Para mostrar un envío
 class ShipmentRead(ShipmentBase):
     id: int
+    user_id: int
     shipment_details: List[ShipmentDetailResponse] = []
     
     class Config:
