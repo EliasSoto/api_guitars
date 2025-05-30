@@ -126,18 +126,18 @@ def delete_shipment(db: Session, shipment_id: int):
 def get_user_shipments_paginated(db: Session, user_id: int, page: int, limit: int):
     offset = (page - 1) * limit
 
-    # Consulta base con joins necesarios
-    query = db.query(Shipment).join(ShipmentDetail).join(Order).filter(
-        Order.user_id == user_id
+    # Filtrar los envíos que estén relacionados con órdenes del usuario
+    query = (
+        db.query(Shipment)
+        .join(ShipmentDetail)
+        .join(Order)
+        .filter(Order.user_id == user_id)
+        .distinct()
     )
-    
-    # Obtener los envíos paginados
-    shipments = query.offset(offset).limit(limit).all()
-    
-    # Contar el total
-    total = query.count()
 
-    # Devuelve siempre un ShipmentListResponse válido
+    total = query.count()
+    shipments = query.offset(offset).limit(limit).all()
+
     return ShipmentListResponse(
         shipments=shipments,
         total=total
@@ -147,14 +147,15 @@ def get_user_shipments_paginated(db: Session, user_id: int, page: int, limit: in
 def get_all_shipments_paginated(db: Session, page: int, limit: int):
     offset = (page - 1) * limit
 
-    # Consulta base sin filtrar por usuario
-    query = db.query(Shipment).join(ShipmentDetail).join(Order)
+    query = (
+        db.query(Shipment)
+        .join(ShipmentDetail)
+        .join(Order)
+        .distinct()
+    )
 
-    # Obtener los envíos paginados
-    shipments = query.offset(offset).limit(limit).all()
-
-    # Contar el total
     total = query.count()
+    shipments = query.offset(offset).limit(limit).all()
 
     return ShipmentListResponse(
         shipments=shipments,
