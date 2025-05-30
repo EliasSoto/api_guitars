@@ -5,6 +5,8 @@ from app.models.order import Order
 from fastapi import HTTPException, status
 from app.schemas.shipment import ShipmentListResponse
 from typing import Optional
+from datetime import datetime
+
 
 ### FUNCIONES PARA GESTIÓN DE ENVÍOS ###
 

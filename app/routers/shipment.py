@@ -12,6 +12,22 @@ router = APIRouter()
 
 ### ENDPOINTS PARA ADMINISTRADORES DE ENVIO ###
 
+# Endpoint para generar un pedido por parte de un administrador.
+@router.post("/admin/envios", tags=["Envíos Admin"], response_model=shipment_schema.ShipmentRead)
+def create_shipment(
+    shipment: shipment_schema.ShipmentCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los admin pueden crear envíos"
+        )
+
+    return shipment_repo.create_shipment( db=db, order_ids=shipment.order_ids, user_id=current_user["id"], shipment_data=shipment.dict(exclude={"order_ids"} )
+    )
+
 # Endpoint para que el admin obtenga todos los envíos paginados
 @router.get("/admin/envios", tags=["Envíos Admin"], response_model=shipment_schema.ShipmentListResponse)
 def get_all_shipments_paginated(
@@ -109,18 +125,3 @@ def get_user_shipments_paginated(
     
     return response
 
-# Endpoint para generar un pedido.
-@router.post("/usuarios/envios", tags=["Envíos Usuario"], response_model=shipment_schema.ShipmentRead)
-def create_shipment(
-    shipment: shipment_schema.ShipmentCreate,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(verify_token)
-):
-    if current_user["role"] != "user":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Solo los usuarios pueden crear envíos"
-        )
-
-    return shipment_repo.create_shipment( db=db, order_ids=shipment.order_ids, user_id=current_user["id"], shipment_data=shipment.dict(exclude={"order_ids"} )
-    )
