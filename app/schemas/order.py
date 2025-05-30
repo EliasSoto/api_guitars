@@ -41,6 +41,8 @@ class OrderUpdate(BaseModel):
 class OrderDetailResponse(BaseModel):
     guitar: GuitarRead
     quantity: int
+    unit_price: float = Field(..., gt=0, description="Precio unitario aplicado a la guitarra.")
+    total_price: float = Field(..., gt=0, description="Precio total por la cantidad de guitarras.")
     
     class Config:
         orm_mode = True
