@@ -5,7 +5,7 @@ from app.models.order import Order
 from fastapi import HTTPException, status
 from app.schemas.shipment import ShipmentListResponse
 from typing import Optional
-from datetime import datetime
+from datetime import date
 
 
 ### FUNCIONES PARA GESTIÓN DE ENVÍOS ###
@@ -23,7 +23,7 @@ def create_shipment(db: Session, order_ids: list[int], user_id: int, shipment_da
 
         # Crear el envío
         db_shipment = Shipment(
-            shipment_date=shipment_data["shipment_date"],
+            shipment_date=date.today(),
             tracking_status=shipment_data["tracking_status"],
             delivery_date=shipment_data.get("delivery_date"),
             price=shipment_data["price"],

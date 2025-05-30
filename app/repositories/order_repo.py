@@ -88,49 +88,18 @@ def get_all_orders_paginated(db: Session, page: int, limit: int):
     offset = (page - 1) * limit
 
     # Consulta base sin filtrar por usuario
-    orders = db.query(Order).offset(offset).limit(limit).all()
-    total = db.query(Order).count()
-
-    if not orders:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No se encontraron pedidos en esta página."
-        )
-
-    order_read_list = []
-    for order in orders:
-        order_details = []
-        for detail in order.order_details:
-            guitar = db.query(Guitar).filter(Guitar.id == detail.guitar_id).first()
-            if not guitar:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Guitarra con ID {detail.guitar_id} no encontrada en el pedido."
-                )
-
-            price_to_use = guitar.liquidation_price if guitar.liquidation_price else guitar.sale_price
-
-            order_details.append(
-                order_schema.OrderDetailResponse(
-                    guitar=GuitarRead.from_orm(guitar),
-                    quantity=detail.quantity,
-                    unit_price=price_to_use,
-                    total_price=price_to_use * detail.quantity
-                )
-            )
-
-        order_read = order_schema.OrderRead(
-            id=order.id,
-            user_id=order.user_id,
-            order_date=order.order_date,
-            total_price=order.total_price,
-            status=order.status,
-            payment_method=order.payment_method,
-            order_details=order_details
-        )
-        order_read_list.append(order_read)
-
-    return order_schema.OrderListResponse(orders=order_read_list, total=total)
+    query = db.query(Order)
+    
+        # Obtener los pedidos paginados
+    orders = query.offset(offset).limit(limit).all()
+    
+    # Contar el total
+    total = query.count()
+    
+    return OrderListResponse(
+        orders=orders,
+        total=total
+    )
 
         
 # Función para los pedidos por id.
@@ -185,49 +154,21 @@ def delete_order(db: Session, order_id: int):
 
 # Función para obtener pedidos paginados.
 def get_orders_paginated(db: Session, page: int, limit: int, user_id: int):
+    # Calculamos el offset basado en la página y el límite.
     offset = (page - 1) * limit
 
-    # Obtener pedidos paginados del usuario
+    # Consultamos los pedidos con el offset y el limit.
     orders = db.query(Order).filter(Order.user_id == user_id).offset(offset).limit(limit).all()
+    
+    # Consultamos el total de pedidos.
     total_orders = db.query(Order).filter(Order.user_id == user_id).count()
 
+    # Si no se encuentran pedidos, lanzamos una excepción.
     if not orders:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No se encontraron pedidos en esta página."
         )
 
-    order_read_list = []
-    for order in orders:
-        order_details = []
-        for detail in order.order_details:
-            guitar = db.query(Guitar).filter(Guitar.id == detail.guitar_id).first()
-            if not guitar:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Guitarra con ID {detail.guitar_id} no encontrada en el pedido."
-                )
-
-            price_to_use = guitar.liquidation_price if guitar.liquidation_price else guitar.sale_price
-
-            order_details.append(
-                order_schema.OrderDetailResponse(
-                    guitar=GuitarRead.from_orm(guitar),
-                    quantity=detail.quantity,
-                    unit_price=price_to_use,
-                    total_price=price_to_use * detail.quantity
-                )
-            )
-
-        order_read = order_schema.OrderRead(
-            id=order.id,
-            user_id=order.user_id,
-            order_date=order.order_date,
-            total_price=order.total_price,
-            status=order.status,
-            payment_method=order.payment_method,
-            order_details=order_details
-        )
-        order_read_list.append(order_read)
-
-    return order_schema.OrderListResponse(orders=order_read_list, total=total_orders)
+    # Devolvemos los pedidos junto con el total.
+    return OrderListResponse(orders=orders, total=total_orders)

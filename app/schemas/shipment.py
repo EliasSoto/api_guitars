@@ -19,7 +19,6 @@ class TrackingStatus(str, Enum):
 
 # Base común para envíos
 class ShipmentBase(BaseModel):
-    shipment_date: date
     tracking_status: TrackingStatus = Field(..., description="Estado del envío.")
     delivery_date: Optional[date] = None
     price: float = Field(..., gt=0, description="Costo del envío.")
@@ -56,6 +55,7 @@ class ShipmentDetailResponse(BaseModel):
 
 # Para mostrar un envío
 class ShipmentRead(ShipmentBase):
+    shipment_date: date
     id: int
     user_id: int
     shipment_details: List[ShipmentDetailResponse] = []
