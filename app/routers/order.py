@@ -58,6 +58,30 @@ def delete_order_by_id(
         
     return order_repo.delete_order(db=db, order_id=order_id)
 
+# Endpoint para que el admin obtenga todos los pedidos paginados
+@router.get("/admin/pedidos", tags=["Pedidos Admin"], response_model=order_schema.OrderListResponse)
+def get_all_orders_paginated(
+    page: int = 1,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para ver todos los pedidos"
+        )
+
+    response = order_repo.get_all_orders_paginated(db=db, page=page, limit=limit)
+
+    if not response.orders or response.total == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No hay pedidos registrados"
+        )
+
+    return response
+
 ### ENDPOINTS DE USUARIOS NORMALES ###
 # Endpoint para generar un pedido.
 @router.post("/usuarios/pedidos", tags=["Pedidos Usuario"], response_model=order_schema.OrderRead)

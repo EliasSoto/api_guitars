@@ -60,6 +60,22 @@ def delete_guitar_by_id(
 
     return guitar_repo.delete_guitar(db=db, guitar_id=guitar_id)
 
+# Endpoint para obtener las guitarras paginadas por parte de un administrador.
+@router.get("/admin/guitarras", tags=["Guitarras Admin"], response_model=guitar_schema.GuitarListResponse)
+def get_paginated_guitars(
+    page: int = 1,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para ver todas guitarras"
+        )
+        
+    return guitar_repo.get_guitars_paginated_admin(db=db, page=page, limit=limit)
+
 ### ENDPOINTS DE USUARIOS NORMALES ###
 
 # Endpoint para obtener una guitarra por id. (Endpoint público)
@@ -72,9 +88,9 @@ def read_guitar_by_id(
 
 # Endpoint para obtener las guitarras paginadas. (Endpoint público)
 @router.get("/guitarras", tags=["Guitarras Públicas"], response_model=guitar_schema.GuitarListResponse)
-def get_paginated_guitars(
+def get_paginated_guitars_without_stock(
     page: int = 1,
     limit: int = 10,
     db: Session = Depends(get_db),
 ):
-    return guitar_repo.get_guitars_paginated(db=db, page=page, limit=limit)
+    return guitar_repo.get_guitars_paginated_user(db=db, page=page, limit=limit)

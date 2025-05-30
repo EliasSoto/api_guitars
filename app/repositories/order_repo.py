@@ -84,6 +84,24 @@ def create_order(db: Session, user_id: int, order: order_schema.OrderCreate):
             detail=f"Error al crear el pedido: {str(e)}"
         )
         
+# Función para obtener todos los pedidos paginados sin filtrar por usuario.
+def get_all_orders_paginated(db: Session, page: int, limit: int):
+    offset = (page - 1) * limit
+
+    # Consulta base sin filtrar por usuario
+    query = db.query(Order)
+
+    # Obtener los pedidos paginados
+    orders = query.offset(offset).limit(limit).all()
+
+    # Contar el total
+    total = query.count()
+
+    return OrderListResponse(
+        orders=orders,
+        total=total
+    )
+        
 # Función para los pedidos por id.
 def get_order_by_id(db: Session, order_id: int):
     db_order = db.query(Order).filter(Order.id == order_id).first()
@@ -154,3 +172,4 @@ def get_orders_paginated(db: Session, page: int, limit: int, user_id: int):
 
     # Devolvemos los pedidos junto con el total.
     return OrderListResponse(orders=orders, total=total_orders)
+
