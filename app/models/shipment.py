@@ -11,7 +11,7 @@ class Shipment(Base):
     delivery_date = Column(Date, nullable=True)
     price = Column(Float)
     shipping_provider = Column(String, index=True)
-    is_immediate_delivery = Column(Boolean, default=False)
+    is_immediate_delivery = Column(Boolean, nullable=True, default=None)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     
     # Relaciones

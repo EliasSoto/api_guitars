@@ -114,3 +114,24 @@ def get_user_orders_paginated(
         )
 
     return order_repo.get_orders_paginated(db=db, page=page, limit=limit, user_id=current_user["id"])
+
+
+# Endpoint para obtener un pedido por id.
+@router.get("/usuarios/pedidos/{order_id}", tags=["Pedidos Usuario"], response_model=order_schema.OrderRead)
+def read_order_by_id_usuario(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    order = order_repo.get_order_by_id(db=db, order_id=order_id)
+
+    if not order:
+        raise HTTPException(status_code=404, detail="Pedido no encontrado")
+
+    if order.user_id != current_user["id"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permiso para ver este pedido"
+        )
+
+    return order

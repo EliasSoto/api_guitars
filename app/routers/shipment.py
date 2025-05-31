@@ -12,22 +12,6 @@ router = APIRouter()
 
 ### ENDPOINTS PARA ADMINISTRADORES DE ENVIO ###
 
-# Endpoint para generar un pedido por parte de un administrador.
-@router.post("/admin/envios", tags=["Envíos Admin"], response_model=shipment_schema.ShipmentRead)
-def create_shipment(
-    shipment: shipment_schema.ShipmentCreate,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(verify_token)
-):
-    if current_user["role"] != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Solo los admin pueden crear envíos"
-        )
-
-    return shipment_repo.create_shipment( db=db, order_ids=shipment.order_ids, user_id=current_user["id"], shipment_data=shipment.dict(exclude={"order_ids"} )
-    )
-
 # Endpoint para que el admin obtenga todos los envíos paginados
 @router.get("/admin/envios", tags=["Envíos Admin"], response_model=shipment_schema.ShipmentListResponse)
 def get_all_shipments_paginated(
@@ -98,7 +82,53 @@ def delete_shipment_by_id(
         
     return shipment_repo.delete_shipment(db=db, shipment_id=shipment_id)
 
+# Endpoint para actualizar envíos por ID de orden.
+@router.put("/admin/envios/pedidos/{order_id}", tags=["Envíos Admin"], response_model=List[shipment_schema.ShipmentRead])
+def update_shipments_by_order_id(
+    order_id: int,
+    shipment: shipment_schema.ShipmentUpdate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para actualizar envíos"
+        )
+
+    # Buscar todos los shipment_details que tienen esa order_id
+    shipment_details = db.query(shipment_repo.ShipmentDetail).filter_by(order_id=order_id).all()
+
+    if not shipment_details:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No se encontraron envíos asociados a esta orden"
+        )
+
+    updated_shipments = []
+
+    for detail in shipment_details:
+        updated = shipment_repo.update_shipment(db=db, shipment_id=detail.shipment_id, shipment_data=shipment)
+        updated_shipments.append(updated)
+
+    return updated_shipments
+
 ### ENDPOINTS DE USUARIOS NORMALES ###
+
+# Endpoint para generar un envío por parte de un usuario normal.
+@router.post("/usuarios/envios", tags=["Envíos Usuario"], response_model=shipment_schema.ShipmentRead)
+def create_shipment(
+    shipment: shipment_schema.ShipmentCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    if current_user["role"] != "user":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los usuarios pueden crear envíos"
+        )
+
+    return shipment_repo.create_shipment(db=db, order_ids=shipment.order_ids, user_id=current_user["id"])
 
 # Endpoint para obtener envios del usuario autenticado.
 @router.get("/usuarios/envios", tags=["Envíos Usuario"], response_model=shipment_schema.ShipmentListResponse)

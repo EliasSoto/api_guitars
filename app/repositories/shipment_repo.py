@@ -11,7 +11,7 @@ from datetime import date
 ### FUNCIONES PARA GESTIÓN DE ENVÍOS ###
 
 # Función para crear un nuevo envío.
-def create_shipment(db: Session, order_ids: list[int], user_id: int, shipment_data: dict):
+def create_shipment(db: Session, order_ids: list[int], user_id: int):
     try:
         # Verificar que todos los pedidos existan
         orders = db.query(Order).filter(Order.id.in_(order_ids)).all()
@@ -21,14 +21,14 @@ def create_shipment(db: Session, order_ids: list[int], user_id: int, shipment_da
                 detail="Uno o más pedidos no fueron encontrados"
             )
 
-        # Crear el envío
+        # Crear el envío solo con tracking_status = procesando
         db_shipment = Shipment(
-            shipment_date=date.today(),
-            tracking_status=shipment_data["tracking_status"],
-            delivery_date=shipment_data.get("delivery_date"),
-            price=shipment_data["price"],
-            shipping_provider=shipment_data["shipping_provider"],
-            is_immediate_delivery=shipment_data["is_immediate_delivery"],
+            shipment_date=None,
+            tracking_status="procesando",
+            delivery_date=None,
+            price=None,
+            shipping_provider=None,
+            is_immediate_delivery=None,
             user_id=user_id
         )
         db.add(db_shipment)
@@ -177,3 +177,10 @@ def update_shipment_status(db: Session, shipment_id: int, new_status: str):
     db.commit()
     db.refresh(db_shipment)
     return db_shipment
+
+# Función para obtener el ID de envío asociado a un pedido.
+def get_shipment_id_by_order_id(db: Session, order_id: int) -> Optional[int]:
+    result = db.query(ShipmentDetail).filter(ShipmentDetail.order_id == order_id).first()
+    if result:
+        return result.shipment_id
+    return None
