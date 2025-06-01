@@ -55,3 +55,9 @@ class ShipmentListResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+class ShipmentStatusOnly(BaseModel):
+    tracking_status: TrackingStatus
+    
+    class Config:
+        orm_mode = True

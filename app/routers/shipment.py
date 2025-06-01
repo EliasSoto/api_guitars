@@ -6,6 +6,7 @@ from database.session import get_db
 from core.auth import verify_token
 from typing import List
 from app.models.order import Order
+from repositories import order_repo
 
 # Necesario para la creación de la API en MAIN.
 router = APIRouter()
@@ -112,6 +113,40 @@ def update_shipments_by_order_id(
         updated_shipments.append(updated)
 
     return updated_shipments
+
+# Endpoint para obtener el estado de envío por ID de pedido
+@router.get("/admin/envios/estado/{order_id}", tags=["Envíos Admin"], response_model=shipment_schema.ShipmentStatusOnly)
+def get_shipment_status_by_order_id(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    # Verificar que el pedido existe
+    order = order_repo.get_order_by_id(db=db, order_id=order_id)
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Pedido no encontrado"
+        )
+
+    # Si es un usuario normal, verificar que el pedido le pertenece
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para ver el estado de envío de este pedido"
+        )
+
+    # Obtener el envío asociado al pedido
+    try:
+        shipment = shipment_repo.get_shipment_by_order_id(db=db, order_id=order_id)
+        return shipment
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener el estado de envío: {str(e)}"
+        )
 
 ### ENDPOINTS DE USUARIOS NORMALES ###
 
