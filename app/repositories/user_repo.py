@@ -189,7 +189,13 @@ def get_users_paginated(db: Session, page: int, limit: int):
     offset = (page - 1) * limit
 
     # Consultamos los usuarios con el offset y el limit.
-    users = db.query(User).offset(offset).limit(limit).all()
+    users = (
+        db.query(User)
+        .order_by(User.id.asc()) 
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
 
     # Consultamos el total de usuarios.
     total_users = db.query(User).count()

@@ -90,34 +90,41 @@ def get_guitar_by_id(db: Session, guitar_id: int):
         )
         
     return db_guitar
-
 # Función para obtener guitarras paginadas para admin.
 def get_guitars_paginated_admin(db: Session, page: int, limit: int):
-    # Calculamos el offset basado en la página y el límite.
     offset = (page - 1) * limit
 
-    # Consultamos las guitarras con el offset y el limit.
-    guitars = db.query(Guitar).offset(offset).limit(limit).all()
+    guitars = (
+        db.query(Guitar)
+        .order_by(Guitar.id.asc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
 
-    # Consultamos el total de guitarras.
     total_guitars = db.query(Guitar).count()
 
-    # Si no se encuentran guitarras, lanzamos una excepción.
     if not guitars:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No se encontraron guitarras en esta página."
         )
 
-    # Devolvemos las guitarras junto con el total.
     return GuitarListResponse(guitars=guitars, total=total_guitars)
+
 
 # Función para obtener guitarras paginadas con stock disponible.
 def get_guitars_paginated_user(db: Session, page: int, limit: int):
     offset = (page - 1) * limit
 
-    # Filtrar solo guitarras con stock > 0
-    guitars = db.query(Guitar).filter(Guitar.stock > 0).offset(offset).limit(limit).all()
+    guitars = (
+        db.query(Guitar)
+        .filter(Guitar.stock > 0)
+        .order_by(Guitar.id.asc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
 
     total_guitars = db.query(Guitar).filter(Guitar.stock > 0).count()
 

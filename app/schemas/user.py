@@ -92,3 +92,10 @@ class UserListResponse(BaseModel):
 
     class Config:
         orm_mode = True
+        
+# Respuesta nombre completo del usuario
+class UserFullNameResponse(BaseModel):
+    full_name: str
+
+    class Config:
+        orm_mode = True

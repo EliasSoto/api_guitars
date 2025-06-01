@@ -134,6 +134,7 @@ def get_user_shipments_paginated(db: Session, user_id: int, page: int, limit: in
         .join(ShipmentDetail)
         .join(Order)
         .filter(Order.user_id == user_id)
+        .order_by(Shipment.id.asc())
         .distinct()
     )
 
@@ -153,6 +154,7 @@ def get_all_shipments_paginated(db: Session, page: int, limit: int):
         db.query(Shipment)
         .join(ShipmentDetail)
         .join(Order)
+        .order_by(Shipment.id.asc())
         .distinct()
     )
 

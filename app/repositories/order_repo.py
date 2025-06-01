@@ -87,15 +87,15 @@ def create_order(db: Session, user_id: int, order: order_schema.OrderCreate):
 def get_all_orders_paginated(db: Session, page: int, limit: int):
     offset = (page - 1) * limit
 
-    # Consulta base sin filtrar por usuario
-    query = db.query(Order)
-    
-        # Obtener los pedidos paginados
+    # Consulta base ordenada por ID ascendente
+    query = db.query(Order).order_by(Order.id.asc())
+
+    # Obtener los pedidos paginados
     orders = query.offset(offset).limit(limit).all()
-    
+
     # Contar el total
     total = query.count()
-    
+
     return OrderListResponse(
         orders=orders,
         total=total
@@ -154,21 +154,25 @@ def delete_order(db: Session, order_id: int):
 
 # Función para obtener pedidos paginados.
 def get_orders_paginated(db: Session, page: int, limit: int, user_id: int):
-    # Calculamos el offset basado en la página y el límite.
     offset = (page - 1) * limit
 
-    # Consultamos los pedidos con el offset y el limit.
-    orders = db.query(Order).filter(Order.user_id == user_id).offset(offset).limit(limit).all()
-    
-    # Consultamos el total de pedidos.
+    # Consultamos los pedidos del usuario ordenados por ID ascendente
+    orders = (
+        db.query(Order)
+        .filter(Order.user_id == user_id)
+        .order_by(Order.id.asc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+    # Consultamos el total de pedidos del usuario
     total_orders = db.query(Order).filter(Order.user_id == user_id).count()
 
-    # Si no se encuentran pedidos, lanzamos una excepción.
     if not orders:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No se encontraron pedidos en esta página."
         )
 
-    # Devolvemos los pedidos junto con el total.
     return OrderListResponse(orders=orders, total=total_orders)

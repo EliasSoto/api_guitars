@@ -160,6 +160,31 @@ def delete_user_by_id(
 
     return {"message": "Usuario eliminado correctamente"}
 
+# Endpoint para obtener el nombre completo de un usuario por id.
+@router.get("/admin/usuarios/nombre/{user_id}/", tags=["Usuarios Admin"], response_model=user_schema.UserFullNameResponse)
+def get_user_full_name_by_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    # Solo los administradores pueden acceder
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para ver esta información"
+        )
+
+    user = user_repo.get_user_by_id(db=db, user_id=user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado"
+        )
+
+    full_name = f"{user.first_name} {user.last_name}"
+    return {"full_name": full_name}
+
 ### ENDPOINTS DE USUARIOS NORMALES ###
 
 # Endpoint para registrar un nuevo usuario normal. (Endpoint Público).
