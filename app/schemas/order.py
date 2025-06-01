@@ -12,8 +12,8 @@ from enum import Enum
 
 # Enumerado para el estado de pedido
 class OrderStatus(str, Enum):
-    pending = "pendiente"
-    processed = "procesado"
+    pending = "por pagar"
+    processed = "pagado"
     cancelled = "cancelado"
 
 # Base común para pedidos
