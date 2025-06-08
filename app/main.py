@@ -38,4 +38,3 @@ app.include_router(address.router)
 app.include_router(guitar.router)
 app.include_router(order.router)
 app.include_router(shipment.router)
-
