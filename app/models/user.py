@@ -23,3 +23,4 @@ class User(Base):
     addresses = relationship("Address", back_populates="user")
     orders = relationship("Order", back_populates="user")
     shipments = relationship("Shipment", back_populates="user")
+    custom_guitars = relationship("CustomGuitar", back_populates="user")
