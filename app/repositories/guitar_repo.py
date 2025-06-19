@@ -80,6 +80,23 @@ def delete_guitar(db: Session, guitar_id: int):
     db.commit()
     return db_guitar
 
+# Función para obtener guitarra por madera + color (para personalización)
+def get_guitar_by_wood_and_color(db: Session, wood_type: str, color: str):
+    db_guitar = db.query(Guitar).filter(
+        Guitar.wood_type == wood_type,
+        Guitar.color == color,
+        Guitar.stock > 0
+    ).first()
+
+    if not db_guitar:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No se encontró una guitarra con esa combinación."
+        )
+        
+    return {"id": db_guitar.id}
+
+
 # Función para obtener una guitarra por id.
 def get_guitar_by_id(db: Session, guitar_id: int):
     db_guitar = db.query(Guitar).filter(Guitar.id == guitar_id).first()
@@ -90,6 +107,7 @@ def get_guitar_by_id(db: Session, guitar_id: int):
         )
         
     return db_guitar
+
 # Función para obtener guitarras paginadas para admin.
 def get_guitars_paginated_admin(db: Session, page: int, limit: int):
     offset = (page - 1) * limit
@@ -135,3 +153,4 @@ def get_guitars_paginated_user(db: Session, page: int, limit: int):
         )
 
     return GuitarListResponse(guitars=guitars, total=total_guitars)
+

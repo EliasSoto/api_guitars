@@ -11,6 +11,15 @@ router = APIRouter()
 
 ### ENDPOINTS PARA ADMINISTRADORES DE GUITARRAS ###
 
+# Endpoint para obtener guitarra por combinación madera + color (para personalización)
+@router.get("/guitarras/base", tags=["Guitarras Públicas"])
+def match_guitar_by_wood_and_color(
+    wood_type: str,
+    color: str,
+    db: Session = Depends(get_db)
+):
+    return guitar_repo.get_guitar_by_wood_and_color(db=db, wood_type=wood_type, color=color)
+
 # Endpoint para crear una nueva guitarra por parte de un administrador.
 @router.post("/admin/guitarras", tags=["Guitarras Admin"], response_model=guitar_schema.GuitarRead)
 def create_guitar(
@@ -94,3 +103,4 @@ def get_paginated_guitars_without_stock(
     db: Session = Depends(get_db),
 ):
     return guitar_repo.get_guitars_paginated_user(db=db, page=page, limit=limit)
+
