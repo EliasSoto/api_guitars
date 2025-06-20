@@ -10,12 +10,14 @@ from app.schemas.component import ComponentListResponse
 
 # Crear un nuevo componente
 def create_component(db: Session, component: component_schema.ComponentCreate):
+    net_price = int(round(component.sale_price / 1.19, 0))
+    
     db_component = Component(
         name=component.name,
         type=component.type,
         purchase_price=component.purchase_price,
         sale_price=component.sale_price,
-        net_price=component.net_price,
+        net_price=net_price,
         stock=component.stock,
         description=component.description,
         purchase_date=component.purchase_date,
@@ -56,6 +58,12 @@ def update_component(db: Session, component_id: int, component_data: component_s
 
     for key, value in update_data.items():
         setattr(db_component, key, value)
+        
+    # Se recalcula net_price se actualiza uel sale_price
+    price_base = update_data.get("sale_price")
+    if price_base:
+        net_price = int(round(price_base / 1.19, 0))
+        db_component.net_price = net_price
 
     db.commit()
     db.refresh(db_component)
@@ -75,18 +83,15 @@ def delete_component(db: Session, component_id: int):
     return db_component
 
 # Obtener componentes paginados
-def get_components_paginated(db: Session, page: int, limit: int):
+def get_components_paginated_filtered(db: Session, page: int, limit: int, stock_only: bool = False):
     offset = (page - 1) * limit
+    query = db.query(Component)
+    
+    if stock_only:
+        query = query.filter(Component.stock > 0)
 
-    components = (
-        db.query(Component)
-        .order_by(Component.id.asc())
-        .offset(offset)
-        .limit(limit)
-        .all()
-    )
-
-    total_components = db.query(Component).count()
+    components = query.order_by(Component.id.asc()).offset(offset).limit(limit).all()
+    total = query.count()
 
     if not components:
         raise HTTPException(
@@ -94,48 +99,30 @@ def get_components_paginated(db: Session, page: int, limit: int):
             detail="No se encontraron componentes en esta página."
         )
 
-    return ComponentListResponse(components=components, total=total_components)
+    return ComponentListResponse(components=components, total=total)
 
-# Obtener componentes paginados
-def get_components_paginated_admin(db: Session, page: int, limit: int):
+# Función para obtener componentes por tipo, subtipo y estado activo
+def get_components_by_type_subtype_active(db: Session, page: int, limit: int, type: str = None, subtype: str = None, is_active: bool = None, stock_only: bool = False):
     offset = (page - 1) * limit
 
-    components = (
-        db.query(Component)
-        .order_by(Component.id.asc())
-        .offset(offset)
-        .limit(limit)
-        .all()
-    )
+    query = db.query(Component)
 
-    total_components = db.query(Component).count()
+    if type:
+        query = query.filter(Component.type == type)
+    if subtype:
+        query = query.filter(Component.subtype == subtype)
+    if is_active is not None:
+        query = query.filter(Component.is_active == is_active)
+    if stock_only:
+        query = query.filter(Component.stock > 0)
+
+    total = query.count()
+    components = query.offset(offset).limit(limit).all()
 
     if not components:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="No se encontraron componentes en esta página."
+            detail="No se encontraron componentes con los filtros especificados."
         )
 
-    return ComponentListResponse(components=components, total=total_components)
-
-# Función para obtener guitarras paginadas con stock disponible.
-def get_guitars_paginated_user(db: Session, page: int, limit: int):
-    offset = (page - 1) * limit
-
-    components = (
-        db.query(Component)
-        .order_by(Component.id.asc())
-        .offset(offset)
-        .limit(limit)
-        .all()
-    )
-
-    total_components = db.query(Component).filter(Component.stock > 0).count()
-
-    if not components:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No se encontraron componentes con stock en esta página."
-        )
-
-    return ComponentListResponse(components=components, total=total_components)
+    return ComponentListResponse(components=components, total=total)

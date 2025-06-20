@@ -137,7 +137,7 @@ def get_guitars_paginated_user(db: Session, page: int, limit: int):
 
     guitars = (
         db.query(Guitar)
-        .filter(Guitar.stock > 0)
+        .filter((Guitar.stock > 0) & (Guitar.is_custom == False))
         .order_by(Guitar.id.asc())
         .offset(offset)
         .limit(limit)
