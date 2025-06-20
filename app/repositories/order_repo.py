@@ -10,6 +10,32 @@ from app.schemas.guitar import GuitarRead
 
 ### FUNCIONES PARA USUARIOS ADMIN ###
 
+# Función para obtener las guitarras del usuario ordenadas por pedidos.
+def get_user_ordered_guitars(db: Session, user_id: int):
+    # Obtener todos los IDs de pedidos del usuario
+    orders = db.query(Order).filter(Order.user_id == user_id).all()
+    if not orders:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El usuario no tiene pedidos registrados."
+        )
+
+    order_ids = [order.id for order in orders]
+
+    # Obtener todos los detalles de pedido que coincidan con esos pedidos
+    order_details = db.query(OrderDetail).filter(OrderDetail.order_id.in_(order_ids)).all()
+    if not order_details:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No se encontraron guitarras en los pedidos del usuario."
+        )
+
+    # Obtener guitarras únicas basadas en los IDs de guitarra encontrados
+    guitar_ids = list({detail.guitar_id for detail in order_details})
+    guitars = db.query(Guitar).filter(Guitar.id.in_(guitar_ids)).all()
+
+    return guitars
+
 # Función para crear un nuevo pedido.
 def create_order(db: Session, user_id: int, order: order_schema.OrderCreate):  
     try:

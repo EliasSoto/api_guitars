@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from .component import ComponentRead
 
-# Component Detail Models
 class ComponentDetailBase(BaseModel):
     component_id: int
     quantity: int = Field(..., gt=0)
@@ -19,14 +18,13 @@ class ComponentDetailRead(ComponentDetailBase):
     class Config:
         orm_mode = True
 
-# Custom Guitar Models
 class CustomGuitarBase(BaseModel):
     guitar_id: int
 
 class CustomGuitarCreate(CustomGuitarBase):
     component_details: List[ComponentDetailBase] = Field(
         ..., 
-        description="List of components for the custom guitar."
+        description="Lista de componentes de la guitarra."
     )
 
 class CustomGuitarUpdate(BaseModel):

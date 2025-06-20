@@ -24,3 +24,4 @@ class User(Base):
     orders = relationship("Order", back_populates="user")
     shipments = relationship("Shipment", back_populates="user")
     custom_guitars = relationship("CustomGuitar", back_populates="user")
+    reviews = relationship("Review", back_populates="user", cascade="all, delete")

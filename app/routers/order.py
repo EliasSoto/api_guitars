@@ -4,6 +4,7 @@ from app.schemas import order as order_schema
 from repositories import order_repo
 from database.session import get_db
 from core.auth import verify_token
+from app.schemas.guitar import GuitarSimpleRead
 from typing import List
 
 # Necesario para la creación de la API en MAIN.
@@ -98,6 +99,20 @@ def create_order(
         )
 
     return order_repo.create_order(db=db, user_id=current_user["id"], order=order)
+
+# Endpoint para obtener todas las guitarras que el usuario ha pedido
+@router.get("/usuarios/pedidos/guitarras", tags=["Pedidos Usuario"], response_model=List[GuitarSimpleRead])
+def get_guitars_from_user_orders(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    if current_user["role"] != "user":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los usuarios pueden consultar sus guitarras pedidas"
+        )
+
+    return order_repo.get_user_ordered_guitars(db=db, user_id=current_user["id"])
 
 # Endpoint para obtener pedidos paginados del usuario autenticado
 @router.get("/usuarios/pedidos/", tags=["Pedidos Usuario"], response_model=order_schema.OrderListResponse)

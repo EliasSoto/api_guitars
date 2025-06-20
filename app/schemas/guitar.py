@@ -69,3 +69,11 @@ class GuitarListResponse(BaseModel):
 
     class Config:
         orm_mode = True
+        
+# Para mostrar solo modelo e imagen de la guitarra
+class GuitarSimpleRead(BaseModel):
+    model: str
+    image_link: Optional[str] = None
+
+    class Config:
+        orm_mode = True

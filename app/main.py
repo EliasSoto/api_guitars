@@ -15,6 +15,7 @@ from routers import order
 from routers import shipment
 from routers import custom_guitar
 from routers import component
+from routers import review
 from fastapi.middleware.cors import CORSMiddleware
 
 # Crear las tablas en la base de datos
@@ -42,3 +43,4 @@ app.include_router(order.router)
 app.include_router(shipment.router)
 app.include_router(custom_guitar.router)
 app.include_router(component.router)
+app.include_router(review.router)
