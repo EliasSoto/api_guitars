@@ -25,3 +25,4 @@ class Guitar(Base):
     # Relaciones
     order_details = relationship("OrderDetail", back_populates="guitar")
     reviews = relationship("Review", back_populates="guitar", cascade="all, delete")
+    wishlists = relationship("Wishlist", back_populates="guitar", cascade="all, delete")

@@ -25,3 +25,4 @@ class User(Base):
     shipments = relationship("Shipment", back_populates="user")
     custom_guitars = relationship("CustomGuitar", back_populates="user")
     reviews = relationship("Review", back_populates="user", cascade="all, delete")
+    wishlists = relationship("Wishlist", back_populates="user", cascade="all, delete")
