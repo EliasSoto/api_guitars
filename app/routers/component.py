@@ -62,28 +62,6 @@ def get_components_paginated(
 
 ### ENDPOINTS PARA USUARIOS DE COMPONENTES ###
 
-# Obtener componente por ID
-@router.get("/usuario/componentes/{component_id}", tags=["Componentes Usuario"], response_model=component_schema.ComponentRead)
-def get_component_by_id(
-    component_id: int,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(verify_token)
-):    
-    return component_repo.get_component_by_id(db=db, component_id=component_id)
-
-# Obtener componentes paginados
-@router.get("/usuario/componentes", tags=["Componentes Usuario"], response_model=component_schema.ComponentListResponse)
-def get_components_paginated(
-    page: int = 1,
-    limit: int = 10,
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(verify_token)
-):
-    if current_user["role"] != "user":
-        raise HTTPException(status_code=403, detail="No tienes permisos para ver componentes")
-    
-    return component_repo.get_components_paginated_filtered(db=db, page=page, limit=limit, stock_only=True)
-
 # Obtener componentes por tipo y subtipo
 @router.get("/usuario/componentes/filtrar", tags=["Componentes Usuario"], response_model=component_schema.ComponentListResponse)
 def get_filtered_components_user(
@@ -100,4 +78,28 @@ def get_filtered_components_user(
         raise HTTPException(status_code=403, detail="No tienes permisos para ver componentes")
     
     return component_repo.get_components_by_type_subtype_active( db=db, page=page, limit=limit, type=type, subtype=subtype, is_active=is_active, stock_only=stock_only)
+
+# Obtener componentes paginados
+@router.get("/usuario/componentes", tags=["Componentes Usuario"], response_model=component_schema.ComponentListResponse)
+def get_components_paginated(
+    page: int = 1,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    if current_user["role"] != "user":
+        raise HTTPException(status_code=403, detail="No tienes permisos para ver componentes")
+    
+    return component_repo.get_components_paginated_filtered(db=db, page=page, limit=limit, stock_only=True)
+
+
+# Obtener componente por ID
+@router.get("/usuario/componentes/{component_id}", tags=["Componentes Usuario"], response_model=component_schema.ComponentRead)
+def get_component_by_id(
+    component_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):    
+    return component_repo.get_component_by_id(db=db, component_id=component_id)
+
 
