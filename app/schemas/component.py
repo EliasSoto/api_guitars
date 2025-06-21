@@ -14,6 +14,7 @@ class ComponentBase(BaseModel):
     brand: Optional[str] = Field(None, min_length=2, max_length=50)
     material: Optional[str] = Field(None, min_length=2, max_length=50)
     position: Optional[str] = Field(None, min_length=2, max_length=50)
+    image_link: Optional[str] = None
     is_active: Optional[bool] = True
 
 class ComponentCreate(ComponentBase):
@@ -32,6 +33,7 @@ class ComponentUpdate(BaseModel):
     brand: Optional[str]
     material: Optional[str]
     position: Optional[str]
+    image_link: Optional[str]
     is_active: Optional[bool]
 
 class ComponentRead(ComponentBase):

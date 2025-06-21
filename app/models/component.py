@@ -18,6 +18,7 @@ class Component(Base):
     purchase_date = Column(Date)
     brand = Column(String)
     material = Column(String)
+    image_link = Column(String)
     position = Column(String)
     is_active = Column(Boolean, default=True, nullable=True)
 

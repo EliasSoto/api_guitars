@@ -24,6 +24,7 @@ def create_component(db: Session, component: component_schema.ComponentCreate):
         brand=component.brand,
         material=component.material,
         position=component.position,
+        image_link=component.image_link,
         is_active=component.is_active if component.is_active is not None else True
     )
     db.add(db_component)
