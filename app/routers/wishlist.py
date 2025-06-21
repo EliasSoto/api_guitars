@@ -10,7 +10,7 @@ router = APIRouter()
 ### ENDPOINTS DE WISHLIST ###
 
 # Obtener lista de wishlist de un usuario logueado
-@router.get("/wishlist", tags=["Wishlist"], response_model=wishlist_schema.WishlistListResponse)
+@router.get("/wishlist", tags=["Lista de Deseados"], response_model=wishlist_schema.WishlistListResponse)
 def get_my_wishlist(
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token),
@@ -27,7 +27,7 @@ def get_my_wishlist(
 
 
 # Agregar una guitarra a la wishlist
-@router.post("/wishlist/{guitar_id}", tags=["Wishlist"], response_model=wishlist_schema.WishlistRead)
+@router.post("/wishlist/{guitar_id}", tags=["Lista de Deseados"], response_model=wishlist_schema.WishlistRead)
 def add_to_wishlist(
     guitar_id: int,
     db: Session = Depends(get_db),
@@ -43,7 +43,7 @@ def add_to_wishlist(
 
 
 # Eliminar una guitarra de la wishlist
-@router.delete("/wishlist/{guitar_id}", tags=["Wishlist"])
+@router.delete("/wishlist/{guitar_id}", tags=["Lista de Deseados"])
 def delete_from_wishlist(
     guitar_id: int,
     db: Session = Depends(get_db),
@@ -60,7 +60,7 @@ def delete_from_wishlist(
 
 
 # Saber si una guitarra está en la wishlist
-@router.get("/wishlist/check/{guitar_id}", tags=["Wishlist"])
+@router.get("/wishlist/check/{guitar_id}", tags=["Lista de Deseados"])
 def is_in_wishlist(
     guitar_id: int,
     db: Session = Depends(get_db),
