@@ -39,6 +39,7 @@ def create_user(
 def get_paginated_users(
     page: int = 1,
     limit: int = 10,
+    search: str = None,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
@@ -49,7 +50,7 @@ def get_paginated_users(
             detail="No tienes permisos para ver los usuarios"
         )
     
-    return user_repo.get_users_paginated(db=db, page=page, limit=limit)
+    return user_repo.get_users_paginated(db=db, page=page, limit=limit, search=search)
 
 # Endpoint para obtener un usuario por id.
 @router.get("/admin/usuarios/{user_id}", tags=["Usuarios Admin"], response_model=user_schema.UserRead)
