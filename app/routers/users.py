@@ -34,12 +34,17 @@ def create_user(
 
     return new_user
 
+
+
+
+
 # Endpoint para obtener una lista paginada de usuarios por parte de un administrador.
 @router.get("/admin/usuarios", tags=["Usuarios Admin"], response_model=user_schema.UserListResponse)
 def get_paginated_users(
     page: int = 1,
     limit: int = 10,
     search: str = None,
+    search_by: str = "first_name",
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
@@ -50,7 +55,17 @@ def get_paginated_users(
             detail="No tienes permisos para ver los usuarios"
         )
     
-    return user_repo.get_users_paginated(db=db, page=page, limit=limit, search=search)
+    return user_repo.get_users_paginated(
+        db=db, 
+        page=page, 
+        limit=limit, 
+        search=search, 
+        search_by=search_by
+    )
+
+
+
+
 
 # Endpoint para obtener un usuario por id.
 @router.get("/admin/usuarios/{user_id}", tags=["Usuarios Admin"], response_model=user_schema.UserRead)

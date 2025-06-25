@@ -183,14 +183,31 @@ def get_user_by_email(db: Session, email: str):
 def get_user_by_nombres(db: Session, first_name: str):
     return db.query(User).filter(User.first_name == first_name).first()
 
+
+
+
+
+
+
+
 # Función para obtener usuarios paginados.
-def get_users_paginated(db: Session, page: int, limit: int, search: str = None):
+def get_users_paginated(db: Session, page: int, limit: int, search: str = None, search_by: str = "first_name"):
     offset = (page - 1) * limit
     query = db.query(User)
 
     # Si se proporciona un término de búsqueda, filtramos por nombre (o email si quieres expandir)
     if search:
-        query = query.filter(User.first_name.ilike(f"%{search}%"))
+        if search_by == "email":
+            query = query.filter(User.email.ilike(f"%{search}%"))
+        elif search_by == "first_name":
+            query = query.filter(User.first_name.ilike(f"%{search}%"))
+        elif search_by == "rut":
+            query = query.filter(User.rut.ilike(f"%{search}%"))
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El campo de búsqueda no es válido. Usa 'first_name', 'email' o 'rut'."
+            )
 
     total_users = query.count()  # total filtrado
     users = (
