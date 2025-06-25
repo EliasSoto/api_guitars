@@ -80,11 +80,10 @@ def delete_guitar(db: Session, guitar_id: int):
     db.commit()
     return db_guitar
 
-# Función para obtener guitarra por madera + color (para personalización)
-def get_guitar_by_wood_and_color(db: Session, wood_type: str, color: str):
+# Función para obtener guitarra por madera (para personalización)
+def get_guitar_by_wood(db: Session, wood_type: str):
     db_guitar = db.query(Guitar).filter(
         Guitar.wood_type == wood_type,
-        Guitar.color == color,
         Guitar.stock > 0
     ).first()
 
@@ -95,7 +94,6 @@ def get_guitar_by_wood_and_color(db: Session, wood_type: str, color: str):
         )
         
     return {"id": db_guitar.id}
-
 
 # Función para obtener una guitarra por id.
 def get_guitar_by_id(db: Session, guitar_id: int):

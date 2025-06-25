@@ -7,43 +7,41 @@ from app.models.component import Component
 from app.repositories import component_detail_repo
 from app.schemas import custom_guitar as custom_guitar_schema
 from app.models.component_detail import ComponentDetail
-from app.schemas.custom_guitar import ComponentDetailCreate, CustomGuitarListResponse
+from app.schemas.custom_guitar import ComponentDetailCreate, CustomGuitarListResponse, CustomGuitarCreate
 
 
 # Crear una guitarra personalizada basada en un modelo y lista de componentes
 def create_custom_guitar(
     db: Session,
     user_id: int,
-    guitar_id: int,
-    total_price: float,
-    component_details: list[ComponentDetailCreate]
+    data: CustomGuitarCreate
 ):
     # Validar guitarra base
-    base_guitar = db.query(Guitar).filter(Guitar.id == guitar_id).first()
+    base_guitar = db.query(Guitar).filter(Guitar.id == data.guitar_id).first()
     if not base_guitar:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Guitarra base no encontrada."
         )
 
-    # Calcular precio inicial con la guitarra base
     final_price = base_guitar.sale_price or 0.0
 
-    # Crear guitarra personalizada vacía por ahora
     custom_guitar = CustomGuitar(
-        guitar_id=guitar_id,
+        guitar_id=data.guitar_id,
         user_id=user_id,
-        total_price=0.0  # provisional
+        total_price=0.0,
+        custom_color=data.custom_color,
+        custom_fret=data.custom_fret,
+        jack_position=data.jack_position
     )
     db.add(custom_guitar)
     db.commit()
     db.refresh(custom_guitar)
 
-    # Agregar componentes directamente aquí
-    for detail in component_details:
+    for detail in data.component_details:
         component = db.query(Component).filter(
-            Component.id == detail.component_id,
-        ).first()
+            Component.id == detail.component_id
+        ).with_for_update().first()
 
         if not component:
             db.rollback()
@@ -52,10 +50,20 @@ def create_custom_guitar(
                 detail=f"Componente ID {detail.component_id} no encontrado"
             )
 
+        if component.stock is None or component.stock < detail.quantity:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Stock insuficiente para el componente ID {detail.component_id}"
+            )
+        
+        # Actualizar stock del componente
+        component.stock -= detail.quantity
+        db.add(component)
+
         unit_price = component.sale_price or 0.0
         subtotal = unit_price * detail.quantity
         final_price += subtotal
-
         # Crear y agregar el ComponentDetail
         component_detail = ComponentDetail(
             custom_guitar_id=custom_guitar.id,

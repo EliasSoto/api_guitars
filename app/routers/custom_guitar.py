@@ -22,9 +22,7 @@ def create_custom_guitar(
     return custom_guitar_repo.create_custom_guitar(
         db=db,
         user_id=current_user["id"],
-        guitar_id=custom_guitar.guitar_id,
-        total_price=0.0,
-        component_details=custom_guitar.component_details
+        data=custom_guitar
     )
 
 # Obtener guitarras personalizadas del usuario autenticado
