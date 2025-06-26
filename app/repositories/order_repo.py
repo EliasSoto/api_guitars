@@ -140,8 +140,7 @@ def create_order(db: Session, user_id: int, order: order_schema.OrderCreate):
         )
         
 # Función para obtener todos los pedidos paginados sin filtrar por usuario.
-
-def get_all_orders_paginated(db: Session, page: int, limit: int, search: str = None, search_by: str = "id"):
+def get_all_orders_paginated(db: Session, page: int, limit: int, search: str = None, search_by: str = "id", is_custom: Optional[bool] = None):
     offset = (page - 1) * limit
     query = db.query(Order).order_by(Order.id.asc())
 
@@ -160,6 +159,17 @@ def get_all_orders_paginated(db: Session, page: int, limit: int, search: str = N
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="El campo de búsqueda no es válido. Usa 'id' o 'user_first_name'."
             )
+
+    if is_custom is not None:
+        subquery = (
+            db.query(OrderDetail.order_id)
+            .filter(
+                OrderDetail.custom_guitar_id.isnot(None) if is_custom
+                else OrderDetail.guitar_id.isnot(None)
+            )
+            .subquery()
+        )
+        query = query.filter(Order.id.in_(select(subquery)))
 
     total = query.count()
     orders = query.offset(offset).limit(limit).all()

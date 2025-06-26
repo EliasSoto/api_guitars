@@ -67,6 +67,7 @@ def get_all_orders_paginated(
     limit: int = 10,
     search: str = None,
     search_by: str = "id",
+    is_custom: Optional[bool] = None,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
@@ -77,7 +78,12 @@ def get_all_orders_paginated(
         )
 
     response = order_repo.get_all_orders_paginated(
-        db=db, page=page, limit=limit, search=search, search_by=search_by
+        db=db,
+        page=page,
+        limit=limit,
+        search=search,
+        search_by=search_by,
+        is_custom=is_custom
     )
 
     if not response.orders or response.total == 0:
@@ -87,6 +93,7 @@ def get_all_orders_paginated(
         )
 
     return response
+
 
 
 ### ENDPOINTS DE USUARIOS NORMALES ###
