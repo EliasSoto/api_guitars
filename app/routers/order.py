@@ -6,6 +6,7 @@ from database.session import get_db
 from core.auth import verify_token
 from app.schemas.guitar import GuitarSimpleRead
 from typing import List
+from typing import Optional
 
 # Necesario para la creación de la API en MAIN.
 router = APIRouter()
@@ -119,6 +120,7 @@ def get_guitars_from_user_orders(
 def get_user_orders_paginated(
     page: int = 1,
     limit: int = 10,
+    is_custom: Optional[bool] = None,
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
@@ -128,7 +130,13 @@ def get_user_orders_paginated(
             detail="Solo los usuarios pueden consultar sus pedidos"
         )
 
-    return order_repo.get_orders_paginated(db=db, page=page, limit=limit, user_id=current_user["id"])
+    return order_repo.get_orders_paginated(
+        db=db,
+        page=page,
+        limit=limit,
+        user_id=current_user["id"],
+        is_custom=is_custom
+    )
 
 
 # Endpoint para obtener un pedido por id.

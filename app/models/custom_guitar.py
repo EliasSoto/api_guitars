@@ -17,3 +17,4 @@ class CustomGuitar(Base):
     guitar = relationship("Guitar")
     component_details = relationship("ComponentDetail", back_populates="custom_guitar")
     user = relationship("User", back_populates="custom_guitars")
+    order_details = relationship("OrderDetail", back_populates="custom_guitar")

@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 from typing import Optional, List
 from datetime import date
 from app.schemas.guitar import GuitarRead
+from app.schemas.custom_guitar import CustomGuitarRead
 from enum import Enum
 
 # Validadores
@@ -23,8 +24,20 @@ class OrderBase(BaseModel):
     
 # Objeto para crear un una guitarra con cantidad
 class OrderItem(BaseModel):
-    guitar_id: int
+    guitar_id: Optional[int] = None
+    custom_guitar_id: Optional[int] = None
     quantity: int = Field(..., gt=0)
+    
+    @root_validator(pre=True)
+    def validate_item(cls, values):
+        guitar_id = values.get("guitar_id")
+        custom_guitar_id = values.get("custom_guitar_id")
+        
+        if guitar_id is None and custom_guitar_id is None:
+            raise ValueError("Debe incluir al menos 'guitar_id' o 'custom_guitar_id'.")
+        if guitar_id is not None and custom_guitar_id is not None:
+            raise ValueError("Solo se debe incluir uno: 'guitar_id' o 'custom_guitar_id'.")
+        return values
     
 # Para crear pedido
 class OrderCreate(OrderBase):
@@ -39,7 +52,8 @@ class OrderUpdate(BaseModel):
 
 # Schema para la relación OrderDetail
 class OrderDetailResponse(BaseModel):
-    guitar: GuitarRead
+    guitar: Optional[GuitarRead] = None
+    custom_guitar: Optional[CustomGuitarRead] = None
     quantity: int
     unit_price: float = Field(..., gt=0, description="Precio unitario aplicado a la guitarra.")
     total_price: float = Field(..., gt=0, description="Precio total por la cantidad de guitarras.")
