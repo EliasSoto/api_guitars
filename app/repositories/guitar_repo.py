@@ -107,18 +107,58 @@ def get_guitar_by_id(db: Session, guitar_id: int):
     return db_guitar
 
 # Función para obtener guitarras paginadas para admin.
-def get_guitars_paginated_admin(db: Session, page: int, limit: int):
+def get_guitars_paginated_admin(db: Session, page: int, limit: int, search: str = None, search_by: str = "model"):
     offset = (page - 1) * limit
+    query = db.query(Guitar)
 
+    if search:
+        if search_by == "model":
+            query = query.filter(Guitar.model.ilike(f"%{search}%"))
+        elif search_by == "brand":
+            query = query.filter(Guitar.brand.ilike(f"%{search}%"))
+        elif search_by == "stock":
+            parts = search.lower().strip().split()
+            if len(parts) == 2:
+                operador, valor_str = parts
+            elif len(parts) == 1:
+                operador, valor_str = "igual", parts[0]
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Formato inválido para búsqueda por stock. Usa 'mayor X', 'menor X' o solo el número."
+                )
+            try:
+                valor = int(valor_str)
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="El valor de stock debe ser un número entero."
+                )
+
+            if operador == "greater":
+                query = query.filter(Guitar.stock >= valor)
+            elif operador == "less":
+                query = query.filter(Guitar.stock <= valor)
+            elif operador == "equal":
+                query = query.filter(Guitar.stock == valor)
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Operador inválido para stock. Usa solo 'mayor' o 'menor'."
+                )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El campo de búsqueda no es válido. Usa 'model', 'brand' o 'stock'."
+            )
+
+    total_guitars = query.count()
     guitars = (
-        db.query(Guitar)
-        .order_by(Guitar.id.asc())
+        query.order_by(Guitar.id.asc())
         .offset(offset)
         .limit(limit)
         .all()
     )
-
-    total_guitars = db.query(Guitar).count()
 
     if not guitars:
         raise HTTPException(
@@ -127,6 +167,10 @@ def get_guitars_paginated_admin(db: Session, page: int, limit: int):
         )
 
     return GuitarListResponse(guitars=guitars, total=total_guitars)
+
+
+
+
 
 
 # Función para obtener guitarras paginadas con stock disponible.

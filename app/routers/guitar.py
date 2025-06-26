@@ -65,16 +65,24 @@ def delete_guitar_by_id(
 def get_paginated_guitars(
     page: int = 1,
     limit: int = 10,
+    search: str = None,
+    search_by: str = "model",
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
     if current_user["role"] != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No tienes permisos para ver todas guitarras"
+            detail="No tienes permisos para ver todas las guitarras"
         )
-        
-    return guitar_repo.get_guitars_paginated_admin(db=db, page=page, limit=limit)
+
+    return guitar_repo.get_guitars_paginated_admin(
+        db=db,
+        page=page,
+        limit=limit,
+        search=search,
+        search_by=search_by
+    )
 
 ### ENDPOINTS DE USUARIOS NORMALES ###
 
