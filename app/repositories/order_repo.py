@@ -9,6 +9,7 @@ from app.models.custom_guitar import CustomGuitar
 from datetime import date
 from typing import Optional
 from app.models.user import User
+from sqlalchemy import select
 
 ### FUNCIONES PARA USUARIOS ADMIN ###
 
@@ -241,7 +242,7 @@ def get_orders_paginated(
             )
             .subquery()
         )
-        base_query = base_query.filter(Order.id.in_(subquery))
+        base_query = base_query.filter(Order.id.in_(select(subquery)))
 
     total_orders = base_query.count()
 
