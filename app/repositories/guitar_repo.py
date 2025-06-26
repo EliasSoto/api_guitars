@@ -121,7 +121,7 @@ def get_guitars_paginated_admin(db: Session, page: int, limit: int, search: str 
             if len(parts) == 2:
                 operador, valor_str = parts
             elif len(parts) == 1:
-                operador, valor_str = "igual", parts[0]
+                operador, valor_str = "equal", parts[0]
             else:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,

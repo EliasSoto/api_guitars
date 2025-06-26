@@ -84,15 +84,58 @@ def delete_component(db: Session, component_id: int):
     return db_component
 
 # Obtener componentes paginados
-def get_components_paginated_filtered(db: Session, page: int, limit: int, stock_only: bool = False):
+def get_components_paginated_filtered(
+    db: Session,
+    page: int,
+    limit: int,
+    search: str = None,
+    search_by: str = "name"
+):
     offset = (page - 1) * limit
     query = db.query(Component)
-    
-    if stock_only:
-        query = query.filter(Component.stock > 0)
 
-    components = query.order_by(Component.id.asc()).offset(offset).limit(limit).all()
+    # Filtro de búsqueda
+    if search:
+        if search_by == "name":
+            query = query.filter(Component.name.ilike(f"%{search}%"))
+        elif search_by == "type":
+            query = query.filter(Component.type.ilike(f"%{search}%"))
+        elif search_by == "subtype":
+            query = query.filter(Component.subtype.ilike(f"%{search}%"))
+        elif search_by == "stock":
+            parts = search.lower().strip().split()
+            if len(parts) == 2:
+                operador, valor_str = parts
+            elif len(parts) == 1:
+                operador, valor_str = "equal", parts[0]
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Formato de búsqueda inválido para stock. Usa: 'mayor 10', 'menor 5', 'igual 3'"
+                )
+
+            try:
+                valor = int(valor_str)
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="El valor de stock debe ser un número entero."
+                )
+
+            if operador == "greater":
+                query = query.filter(Component.stock >= valor)
+            elif operador == "less":
+                query = query.filter(Component.stock <= valor)
+            elif operador == "equal":
+                query = query.filter(Component.stock == valor)
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Operador inválido para stock. Usa: mayor, menor o igual."
+                )
+
     total = query.count()
+    components = query.order_by(Component.id.asc()).offset(offset).limit(limit).all()
 
     if not components:
         raise HTTPException(
@@ -101,6 +144,7 @@ def get_components_paginated_filtered(db: Session, page: int, limit: int, stock_
         )
 
     return ComponentListResponse(components=components, total=total)
+
 
 # Función para obtener componentes por tipo, subtipo y estado activo
 def get_components_by_type_subtype_active(db: Session, page: int, limit: int, type: str = None, subtype: str = None, is_active: bool = None, stock_only: bool = False):
