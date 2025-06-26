@@ -124,19 +124,32 @@ def delete_shipment(db: Session, shipment_id: int):
     db.commit()
     return db_shipment
 
-# Función para obtener envíos paginados.
-def get_user_shipments_paginated(db: Session, user_id: int, page: int, limit: int):
+
+def get_user_shipments_paginated(
+    db: Session,
+    page: int,
+    limit: int,
+    search: str = None,
+    search_by: str = 'id'
+):
     offset = (page - 1) * limit
 
-    # Filtrar los envíos que estén relacionados con órdenes del usuario
-    query = (
-        db.query(Shipment)
-        .join(ShipmentDetail)
-        .join(Order)
-        .filter(Order.user_id == user_id)
-        .order_by(Shipment.id.asc())
-        .distinct()
-    )
+    query = db.query(Shipment).order_by(Shipment.id.asc())
+
+    if search:
+        if search_by == "id":
+            if search.isdigit():
+                query = query.filter(Shipment.id == int(search))
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="El ID debe ser un número entero válido."
+                )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Campo de búsqueda inválido. Solo se permite 'id'."
+            )
 
     total = query.count()
     shipments = query.offset(offset).limit(limit).all()
@@ -145,6 +158,9 @@ def get_user_shipments_paginated(db: Session, user_id: int, page: int, limit: in
         shipments=shipments,
         total=total
     )
+
+
+
 
 # Función para obtener todos los envíos paginados (para administradores).
 def get_all_shipments_paginated(db: Session, page: int, limit: int):

@@ -52,13 +52,23 @@ def delete_component(
 def get_components_paginated(
     page: int = 1,
     limit: int = 10,
+    search: str = None,
+    search_by: str = "name",
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
     if current_user["role"] != "admin":
         raise HTTPException(status_code=403, detail="No tienes permisos para ver componentes")
     
-    return component_repo.get_components_paginated_filtered(db=db, page=page, limit=limit, stock_only=False)
+    return component_repo.get_components_paginated_filtered(
+        db=db,
+        page=page,
+        limit=limit,
+        search=search,
+        search_by=search_by
+    )
+
+
 
 ### ENDPOINTS PARA USUARIOS DE COMPONENTES ###
 

@@ -18,6 +18,8 @@ router = APIRouter()
 def get_all_shipments_paginated(
     page: int = 1,
     limit: int = 10,
+    search: str = None,
+    search_by: str = "id",
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
@@ -27,7 +29,7 @@ def get_all_shipments_paginated(
             detail="No tienes permisos para ver los envíos"
         )
 
-    response = shipment_repo.get_all_shipments_paginated(db=db, page=page, limit=limit)
+    response = shipment_repo.get_user_shipments_paginated(db=db, page=page, limit=limit, search=search, search_by=search_by)
 
     if not response.shipments or response.total == 0:
         raise HTTPException(
