@@ -7,6 +7,7 @@ from app.models.order_detail import OrderDetail
 from app.models.guitar import Guitar
 from datetime import date
 from app.schemas.guitar import GuitarRead
+from app.models.user import User
 
 ### FUNCIONES PARA USUARIOS ADMIN ###
 
@@ -110,17 +111,29 @@ def create_order(db: Session, user_id: int, order: order_schema.OrderCreate):
 
         
 # Función para obtener todos los pedidos paginados sin filtrar por usuario.
-def get_all_orders_paginated(db: Session, page: int, limit: int):
-    offset = (page - 1) * limit
 
-    # Consulta base ordenada por ID ascendente
+def get_all_orders_paginated(db: Session, page: int, limit: int, search: str = None, search_by: str = "id"):
+    offset = (page - 1) * limit
     query = db.query(Order).order_by(Order.id.asc())
 
-    # Obtener los pedidos paginados
-    orders = query.offset(offset).limit(limit).all()
+    if search:
+        if search_by == "id":
+            try:
+                search_id = int(search)
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="El ID de búsqueda debe ser un número entero válido."
+                )
+            query = query.filter(Order.id == search_id)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El campo de búsqueda no es válido. Usa 'id' o 'user_first_name'."
+            )
 
-    # Contar el total
     total = query.count()
+    orders = query.offset(offset).limit(limit).all()
 
     return OrderListResponse(
         orders=orders,

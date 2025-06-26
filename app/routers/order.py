@@ -64,6 +64,8 @@ def delete_order_by_id(
 def get_all_orders_paginated(
     page: int = 1,
     limit: int = 10,
+    search: str = None,
+    search_by: str = "id",
     db: Session = Depends(get_db),
     current_user: dict = Depends(verify_token)
 ):
@@ -73,7 +75,9 @@ def get_all_orders_paginated(
             detail="No tienes permisos para ver todos los pedidos"
         )
 
-    response = order_repo.get_all_orders_paginated(db=db, page=page, limit=limit)
+    response = order_repo.get_all_orders_paginated(
+        db=db, page=page, limit=limit, search=search, search_by=search_by
+    )
 
     if not response.orders or response.total == 0:
         raise HTTPException(
@@ -82,6 +86,7 @@ def get_all_orders_paginated(
         )
 
     return response
+
 
 ### ENDPOINTS DE USUARIOS NORMALES ###
 # Endpoint para generar un pedido.
