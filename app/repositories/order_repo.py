@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models.order import Order
 from fastapi import HTTPException, status
 from app.schemas import order as order_schema
@@ -181,14 +181,31 @@ def get_all_orders_paginated(db: Session, page: int, limit: int, search: str = N
 
 # Función para los pedidos por id.
 def get_order_by_id(db: Session, order_id: int):
-    db_order = db.query(Order).filter(Order.id == order_id).first()
-    
+    db_order = (
+        db.query(Order)
+        .options(
+            joinedload(Order.order_details)
+            .joinedload(OrderDetail.guitar),
+
+            joinedload(Order.order_details)
+            .joinedload(OrderDetail.custom_guitar)
+            .joinedload(CustomGuitar.guitar),  # Guitarra base de la custom
+
+            joinedload(Order.order_details)
+            .joinedload(OrderDetail.custom_guitar)
+            .joinedload(CustomGuitar.component_details)
+            .joinedload(CustomGuitar.component_details.property.mapper.class_.component)  # o .joinedload("component")
+        )
+        .filter(Order.id == order_id)
+        .first()
+    )
+
     if not db_order:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Pedido no encontrado"
         )
-        
+
     return db_order
 
 # Función para obtener todos los pedidos.

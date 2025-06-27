@@ -29,7 +29,7 @@ def get_all_shipments_paginated(
             detail="No tienes permisos para ver los envíos"
         )
 
-    response = shipment_repo.get_user_shipments_paginated(db=db, page=page, limit=limit, search=search, search_by=search_by)
+    response = shipment_repo.get_user_shipments_paginated(db=db, page=page, limit=limit, search=search, search_by=search_by,)
 
     if not response.shipments or response.total == 0:
         raise HTTPException(

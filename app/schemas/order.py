@@ -4,6 +4,7 @@ from datetime import date
 from app.schemas.guitar import GuitarRead
 from app.schemas.custom_guitar import CustomGuitarRead
 from enum import Enum
+from app.schemas.guitar import GuitarUserRead
 
 # Validadores
 # ge = greater than or equal
@@ -52,12 +53,12 @@ class OrderUpdate(BaseModel):
 
 # Schema para la relación OrderDetail
 class OrderDetailResponse(BaseModel):
-    guitar: Optional[GuitarRead] = None
+    guitar: Optional[GuitarUserRead] = None
     custom_guitar: Optional[CustomGuitarRead] = None
     quantity: int
     unit_price: float = Field(..., gt=0, description="Precio unitario aplicado a la guitarra.")
     total_price: float = Field(..., gt=0, description="Precio total por la cantidad de guitarras.")
-    
+
     class Config:
         orm_mode = True
 

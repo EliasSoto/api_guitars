@@ -77,3 +77,18 @@ class GuitarSimpleRead(BaseModel):
 
     class Config:
         orm_mode = True
+        
+# Para mostrar datos al usuario
+class GuitarUserRead(BaseModel):
+    id: int
+    model: str
+    brand: str
+    description: str
+    sale_price: float
+    wood_type: str
+    image_link: Optional[str] = None
+    color: str
+    fret_count: int
+
+    class Config:
+        orm_mode = True

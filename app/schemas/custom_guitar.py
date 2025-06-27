@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from .component import ComponentRead
+from app.schemas.guitar import GuitarUserRead
 
 class ComponentDetailBase(BaseModel):
     component_id: int
@@ -41,6 +42,7 @@ class CustomGuitarUpdate(BaseModel):
 class CustomGuitarRead(CustomGuitarBase):
     id: int
     total_price: float
+    guitar: GuitarUserRead
     component_details: List[ComponentDetailRead]
 
     class Config:

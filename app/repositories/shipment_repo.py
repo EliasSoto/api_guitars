@@ -129,12 +129,16 @@ def get_user_shipments_paginated(
     db: Session,
     page: int,
     limit: int,
+    user_id: int = None,
     search: str = None,
     search_by: str = 'id'
 ):
     offset = (page - 1) * limit
 
     query = db.query(Shipment).order_by(Shipment.id.asc())
+
+    if user_id is not None:
+        query = query.filter(Shipment.user_id == user_id)
 
     if search:
         if search_by == "id":
@@ -158,9 +162,6 @@ def get_user_shipments_paginated(
         shipments=shipments,
         total=total
     )
-
-
-
 
 # Función para obtener todos los envíos paginados (para administradores).
 def get_all_shipments_paginated(db: Session, page: int, limit: int):
