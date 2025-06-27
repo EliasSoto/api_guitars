@@ -50,7 +50,23 @@ def get_user_review_by_id(
 ):
     return review_repo.get_review_by_id_and_user(db=db, review_id=review_id, user_id=current_user["id"])
 
-
+# Obtener reseña propia por ID de guitarra
+@router.get("/usuarios/guitarras/{guitar_id}/resenas", tags=["Reseñas Usuario"], response_model=review_schema.ReviewRead)
+def get_my_review_by_guitar_id(
+    guitar_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(verify_token)
+):
+    if current_user["role"] != "user":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los usuarios pueden ver sus reseñas"
+        )
+    
+    review = review_repo.get_review_by_guitar_and_user(db=db, guitar_id=guitar_id, user_id=current_user["id"])
+    if not review:
+        raise HTTPException(status_code=404, detail="Reseña no encontrada para esta guitarra")
+    return review
 
 # Actualizar reseña propia
 @router.put("/usuarios/resenas/{review_id}", tags=["Reseñas Usuario"], response_model=review_schema.ReviewRead)

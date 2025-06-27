@@ -76,6 +76,13 @@ def get_review_by_id_and_user(db: Session, review_id: int, user_id: int):
         )
     return review
 
+# Obtener una reseña por ID de guitarra y usuario
+def get_review_by_guitar_and_user(db: Session, guitar_id: int, user_id: int):
+    return db.query(Review).filter(
+        Review.guitar_id == guitar_id,
+        Review.user_id == user_id
+    ).first()
+
 # Obtener todas las reseñas de un usuario
 def get_user_reviews(db: Session, user_id: int):
     return db.query(Review).filter(Review.user_id == user_id).all()
