@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from typing import Optional, List
 from datetime import date
+from utils.component_validators import (validate_sale_price, validate_purchase_date, validate_is_active, validate_subtype)
 
 class ComponentBase(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
@@ -13,11 +14,14 @@ class ComponentBase(BaseModel):
     purchase_date: date
     brand: Optional[str] = Field(None, min_length=2, max_length=50)
     material: Optional[str] = Field(None, min_length=2, max_length=50)
-    position: Optional[str] = Field(None, min_length=2, max_length=50)
     image_link: Optional[str] = None
     is_active: Optional[bool] = True
 
 class ComponentCreate(ComponentBase):
+    _validate_sale_price = validator("sale_price", allow_reuse=True)(validate_sale_price)
+    _validate_purchase_date = validator("purchase_date", allow_reuse=True)(validate_purchase_date)
+    _validate_is_active = validator("is_active", allow_reuse=True)(validate_is_active)
+    _validate_subtype = validator("subtype", allow_reuse=True)(validate_subtype)
     pass
 
 class ComponentUpdate(BaseModel):
@@ -32,12 +36,17 @@ class ComponentUpdate(BaseModel):
     purchase_date: Optional[date]
     brand: Optional[str]
     material: Optional[str]
-    position: Optional[str]
     image_link: Optional[str]
     is_active: Optional[bool]
+    
+    _validate_sale_price = validator("sale_price", allow_reuse=True)(validate_sale_price)
+    _validate_purchase_date = validator("purchase_date", allow_reuse=True)(validate_purchase_date)
+    _validate_is_active = validator("is_active", allow_reuse=True)(validate_is_active)
+    _validate_subtype = validator("subtype", allow_reuse=True)(validate_subtype)
 
 class ComponentRead(ComponentBase):
     id: int
+    net_price: float
 
     class Config:
         orm_mode = True

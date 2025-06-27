@@ -1,5 +1,3 @@
-# app/repositories/component_repo.py
-
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from app.models.component import Component
@@ -23,7 +21,6 @@ def create_component(db: Session, component: component_schema.ComponentCreate):
         purchase_date=component.purchase_date,
         brand=component.brand,
         material=component.material,
-        position=component.position,
         image_link=component.image_link,
         is_active=component.is_active if component.is_active is not None else True
     )
