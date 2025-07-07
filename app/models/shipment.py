@@ -12,8 +12,8 @@ class Shipment(Base):
     price = Column(Float)
     shipping_provider = Column(String, index=True)
     is_immediate_delivery = Column(Boolean, nullable=True, default=None)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     
     # Relaciones
     user = relationship("User", back_populates="shipments")
-    shipment_details = relationship("ShipmentDetail", back_populates="shipment")
+    shipment_details = relationship("ShipmentDetail", back_populates="shipment", cascade="all, delete-orphan")

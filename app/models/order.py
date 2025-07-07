@@ -10,9 +10,9 @@ class Order(Base):
     total_price = Column(Float)
     status = Column(String, index=True)
     payment_method = Column(String)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # Relaciones
     user = relationship("User", back_populates="orders")
-    shipment_details = relationship("ShipmentDetail", back_populates="order")
-    order_details = relationship("OrderDetail", back_populates="order")
+    shipment_details = relationship("ShipmentDetail", back_populates="order", cascade="all, delete-orphan")
+    order_details = relationship("OrderDetail", back_populates="order", cascade="all, delete-orphan")

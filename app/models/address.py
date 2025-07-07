@@ -12,7 +12,7 @@ class Address(Base):
     directions = Column(String, nullable=True)
     address_type = Column(String)
     is_active = Column(Boolean, default=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
     # Relaciones
     user = relationship("User", back_populates="addresses")

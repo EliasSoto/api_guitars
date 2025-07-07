@@ -7,7 +7,7 @@ class Review(Base):
     __tablename__ = "reviews"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     guitar_id = Column(Integer, ForeignKey("guitars.id"), nullable=False)
     rating = Column(Integer, nullable=False)
     comment = Column(String, nullable=True)

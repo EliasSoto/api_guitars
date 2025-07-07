@@ -7,7 +7,7 @@ class CustomGuitar(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     guitar_id = Column(Integer, ForeignKey("guitars.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     total_price = Column(Float, default=0.0)
     custom_color = Column(String(length=7), nullable=True)
     custom_fret = Column(Integer, nullable=True)
@@ -15,6 +15,10 @@ class CustomGuitar(Base):
 
     # Relaciiones
     guitar = relationship("Guitar")
-    component_details = relationship("ComponentDetail", back_populates="custom_guitar")
+    component_details = relationship("ComponentDetail", back_populates="custom_guitar", cascade="all, delete", passive_deletes=True)
     user = relationship("User", back_populates="custom_guitars")
-    order_details = relationship("OrderDetail", back_populates="custom_guitar")
+    order_details = relationship("OrderDetail", back_populates="custom_guitar", cascade="all, delete", passive_deletes=True)
+    
+    
+
+

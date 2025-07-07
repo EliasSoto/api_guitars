@@ -20,9 +20,10 @@ class User(Base):
     is_admin = Column(Boolean, default=False)
 
     # Relaciones
-    addresses = relationship("Address", back_populates="user")
-    orders = relationship("Order", back_populates="user")
-    shipments = relationship("Shipment", back_populates="user")
-    custom_guitars = relationship("CustomGuitar", back_populates="user")
-    reviews = relationship("Review", back_populates="user", cascade="all, delete")
-    wishlists = relationship("Wishlist", back_populates="user", cascade="all, delete")
+    addresses = relationship("Address", back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
+    orders = relationship("Order", back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
+    shipments = relationship("Shipment", back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
+    custom_guitars = relationship("CustomGuitar", back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
+    reviews = relationship("Review", back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
+    wishlists = relationship("Wishlist", back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
+
