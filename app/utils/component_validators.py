@@ -3,7 +3,7 @@ from datetime import date
 # Función para validar el precio de venta, asegurando que no sea menor al precio de compra.
 def validate_sale_price(sale_price: float, values: dict) -> float:
     purchase_price = values.get("purchase_price")
-    if purchase_price is not None and sale_price < purchase_price:
+    if purchase_price is not None and sale_price <= purchase_price:
         raise ValueError("El precio de venta no puede ser menor al precio de compra.")
     return sale_price
 

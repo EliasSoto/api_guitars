@@ -189,12 +189,12 @@ def get_order_by_id(db: Session, order_id: int):
 
             joinedload(Order.order_details)
             .joinedload(OrderDetail.custom_guitar)
-            .joinedload(CustomGuitar.guitar),  # Guitarra base de la custom
+            .joinedload(CustomGuitar.guitar),
 
             joinedload(Order.order_details)
             .joinedload(OrderDetail.custom_guitar)
             .joinedload(CustomGuitar.component_details)
-            .joinedload(CustomGuitar.component_details.property.mapper.class_.component)  # o .joinedload("component")
+            .joinedload(CustomGuitar.component_details.property.mapper.class_.component)
         )
         .filter(Order.id == order_id)
         .first()
@@ -255,12 +255,9 @@ def get_orders_paginated(
     is_custom: Optional[bool] = None
 ):
     offset = (page - 1) * limit
-
-    # 
-    base_query = db.query(Order).filter(Order.user_id == user_id)
+    query = db.query(Order).filter(Order.user_id == user_id).order_by(Order.id.asc())
 
     if is_custom is not None:
-        # Filtrar por guitarras personalizadas o no personalizadas
         subquery = (
             db.query(OrderDetail.order_id)
             .filter(
@@ -269,22 +266,12 @@ def get_orders_paginated(
             )
             .subquery()
         )
-        base_query = base_query.filter(Order.id.in_(select(subquery)))
+        query = query.filter(Order.id.in_(select(subquery)))
 
-    total_orders = base_query.count()
+    total = query.count()
+    orders = query.offset(offset).limit(limit).all()
 
-    orders = (
-        base_query
-        .order_by(Order.id.asc())
-        .offset(offset)
-        .limit(limit)
-        .all()
+    return OrderListResponse(
+        orders=orders,
+        total=total
     )
-
-    if not orders:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No se encontraron pedidos en esta página."
-        )
-
-    return OrderListResponse(orders=orders, total=total_orders)
